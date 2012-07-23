@@ -55,6 +55,7 @@ import org.grid.server.Field.BodyPosition;
 import org.grid.server.Field.Cell;
 
 
+// TODO: Auto-generated Javadoc
 public class Main {
 
 	private static final int PORT = 5000;
@@ -124,6 +125,13 @@ public class Main {
 
 			private Agent sender, receiver;
 
+			/**
+			 * Instantiates a new message.
+			 *
+			 * @param sender the sender
+			 * @param receiver the receiver
+			 * @param length the length
+			 */
 			public Message(Agent sender, Agent receiver, int length) {
 				super();
 				this.sender = sender;
@@ -134,11 +142,17 @@ public class Main {
 
 		}
 
+		/**
+		 * Instantiates a new game swing view.
+		 */
 		public GameSwingView() {
 			super(12);
 			addMouseListener(this);
 		}
 
+		/* (non-Javadoc)
+		 * @see org.grid.arena.SwingView#paint(java.awt.Graphics)
+		 */
 		@Override
 		public void paint(Graphics g) {
 
@@ -228,6 +242,9 @@ public class Main {
 
 		}
 
+		/* (non-Javadoc)
+		 * @see org.grid.server.GameListener#message(org.grid.server.Team, int, int, int)
+		 */
 		@Override
 		public void message(Team team, int from, int to, int length) {
 			synchronized (buffer) {
@@ -243,6 +260,9 @@ public class Main {
 
 		}
 
+		/* (non-Javadoc)
+		 * @see org.grid.server.ClientsPanel.SelectionObserver#clientSelected(org.grid.server.Dispatcher.Client)
+		 */
 		@Override
 		public void clientSelected(Client client) {
 
@@ -268,16 +288,25 @@ public class Main {
 
 		}
 
+		/* (non-Javadoc)
+		 * @see org.grid.server.GameListener#position(org.grid.server.Team, int, org.grid.server.Field.BodyPosition)
+		 */
 		@Override
 		public void position(Team team, int id, BodyPosition p) {
 
 		}
 
+		/* (non-Javadoc)
+		 * @see org.grid.server.GameListener#step()
+		 */
 		@Override
 		public void step() {
 
 		}
 
+		/* (non-Javadoc)
+		 * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
+		 */
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			
@@ -306,24 +335,46 @@ public class Main {
 			
 		}
 
+		/* (non-Javadoc)
+		 * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
+		 */
 		@Override
 		public void mouseEntered(MouseEvent e) {}
 
+		/* (non-Javadoc)
+		 * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
+		 */
 		@Override
 		public void mouseExited(MouseEvent e) {}
 
+		/* (non-Javadoc)
+		 * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
+		 */
 		@Override
 		public void mousePressed(MouseEvent e) {}
 
+		/* (non-Javadoc)
+		 * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
+		 */
 		@Override
 		public void mouseReleased(MouseEvent e) {}
 
 	}
 
+	/**
+	 * The main method.
+	 * Game is loaded from given .game file.
+	 * Dispatcher is created (sets socket and some game parameters).
+	 * Game is run in thread where steps are triggered (handling moves and collisions).
+	 * Create GUI.
+	 *
+	 * @param args Filename of .game configuration file
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static void main(String[] args) throws IOException {
 		
 		info("Starting game server (release %s)", RELEASE);
-
+		System.out.println(System.getProperty("user.dir"));
 		if (args.length < 1) {
 			info("Please provide game description file location as an argument.");
 			System.exit(1);
@@ -494,6 +545,12 @@ public class Main {
 	
 	private static DateFormat date = new SimpleDateFormat("[hh:mm:ss] ");
 	
+	/**
+	 * Log.
+	 *
+	 * @param format the format
+	 * @param objects the objects
+	 */
 	public static void log(String format, Object ... objects) {
 		
 		try {
@@ -510,6 +567,12 @@ public class Main {
 		} catch (Exception e) { e.printStackTrace(); }
 	}
 	
+	/**
+	 * Info.
+	 *
+	 * @param format the format
+	 * @param objects the objects
+	 */
 	public static void info(String format, Object ... objects) {
 		
 		//System.out.println(date.format(new Date()) + String.format(format, objects));

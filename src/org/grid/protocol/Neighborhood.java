@@ -23,6 +23,7 @@ import java.io.Serializable;
 import org.grid.arena.Arena;
 
 
+// TODO: Auto-generated Javadoc
 public class Neighborhood implements Serializable, Arena {
 	
 	public static final int EMPTY = 0;
@@ -45,6 +46,11 @@ public class Neighborhood implements Serializable, Arena {
 	
 	private int[] grid;
 	
+	/**
+	 * Instantiates a new neighborhood.
+	 *
+	 * @param size the size
+	 */
 	public Neighborhood(int size) {
 	
 		this.size = size;
@@ -57,6 +63,13 @@ public class Neighborhood implements Serializable, Arena {
 		return size;
 	}
 	
+	/**
+	 * Gets the cell.
+	 *
+	 * @param x the x
+	 * @param y the y
+	 * @return the cell
+	 */
 	public int getCell(int x, int y) {
 	
 		if (x > size || x < -size || y > size || y < -size)
@@ -70,6 +83,13 @@ public class Neighborhood implements Serializable, Arena {
 		
 	}
 	
+	/**
+	 * Sets the cell.
+	 *
+	 * @param x the x
+	 * @param y the y
+	 * @param c the c
+	 */
 	public void setCell(int x, int y, int c) {
 
 		if (x > size || x < -size || y > size || y < -size)
@@ -82,6 +102,9 @@ public class Neighborhood implements Serializable, Arena {
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see org.grid.arena.Arena#getBaseTile(int, int)
+	 */
 	@Override
 	public int getBaseTile(int x, int y) {
 		return 0;
@@ -91,6 +114,9 @@ public class Neighborhood implements Serializable, Arena {
 	
 	private static transient final Color OTHER_COLOR = Color.RED.brighter();
 	
+	/* (non-Javadoc)
+	 * @see org.grid.arena.Arena#getBodyColor(int, int)
+	 */
 	@Override
 	public Color getBodyColor(int x, int y) {
 		
@@ -102,6 +128,9 @@ public class Neighborhood implements Serializable, Arena {
 		return OTHER_COLOR;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.grid.arena.Arena#getBodyTile(int, int)
+	 */
 	@Override
 	public int getBodyTile(int x, int y) {
 	
@@ -132,11 +161,17 @@ public class Neighborhood implements Serializable, Arena {
 		return size*2 + 1;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.grid.arena.Arena#getBodyOffsetX(int, int)
+	 */
 	@Override
 	public float getBodyOffsetX(int x, int y) {
 		return 0;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.grid.arena.Arena#getBodyOffsetY(int, int)
+	 */
 	@Override
 	public float getBodyOffsetY(int x, int y) {
 		return 0;

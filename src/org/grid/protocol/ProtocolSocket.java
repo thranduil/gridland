@@ -25,17 +25,27 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+// TODO: Auto-generated Javadoc
 public class ProtocolSocket {
 
 	public static class AppendableObjectOutputStream extends ObjectOutputStream {
 
-		  public AppendableObjectOutputStream(OutputStream out) throws IOException {
+		  /**
+  		 * Instantiates a new appendable object output stream.
+  		 *
+  		 * @param out the out
+  		 * @throws IOException Signals that an I/O exception has occurred.
+  		 */
+  		public AppendableObjectOutputStream(OutputStream out) throws IOException {
 		    super(out);
 		    
 		    super.writeStreamHeader();
 		  }
 
-		  @Override
+		  /* (non-Javadoc)
+  		 * @see java.io.ObjectOutputStream#writeStreamHeader()
+  		 */
+  		@Override
 		  protected void writeStreamHeader() throws IOException {
 		    // do not write a header
 		  }
@@ -61,6 +71,12 @@ public class ProtocolSocket {
 	
 	private Socket socket;
 	
+	/**
+	 * Instantiates a new protocol socket.
+	 *
+	 * @param sck the socket
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public ProtocolSocket(Socket sck) throws IOException {
 
 		this.socket = sck;
@@ -153,6 +169,11 @@ public class ProtocolSocket {
 		outputThread.start();
 	}
 	
+	/**
+	 * Receive message.
+	 *
+	 * @return the message
+	 */
 	public Message receiveMessage() {
 		
 		synchronized (inQueue) {
@@ -166,6 +187,11 @@ public class ProtocolSocket {
 		
 	}
 	
+	/**
+	 * Wait message.
+	 *
+	 * @return the message
+	 */
 	public Message waitMessage() {
 		
 		synchronized (inQueue) {
@@ -182,6 +208,11 @@ public class ProtocolSocket {
 		
 	}
 	
+	/**
+	 * Send message.
+	 *
+	 * @param msg the msg
+	 */
 	public void sendMessage(Message msg) {
 		
 		if (msg == null)
@@ -197,6 +228,9 @@ public class ProtocolSocket {
 		
 	}
 	
+	/**
+	 * Close.
+	 */
 	public void close() {
 		
 		outQueue.clear();
@@ -218,6 +252,11 @@ public class ProtocolSocket {
 		}
 	}
 	
+	/**
+	 * Handle message.
+	 *
+	 * @param message the message
+	 */
 	protected void handleMessage(Message message) {
 		
 		synchronized (inQueue) {
@@ -229,6 +268,9 @@ public class ProtocolSocket {
 		
 	}
 	
+	/**
+	 * On terminate.
+	 */
 	protected void onTerminate() {
 		
 	}

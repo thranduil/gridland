@@ -59,6 +59,13 @@ public class Game {
 
 		private int delay;
 		
+		/**
+		 * Instantiates a new message container.
+		 *
+		 * @param to the receiver
+		 * @param message the message
+		 * @param delay the delay
+		 */
 		public MessageContainter(int to, byte[] message, int delay) {
 			super();
 			this.to = to;
@@ -74,6 +81,11 @@ public class Game {
 			return message;
 		}
 
+		/**
+		 * Decrease delay.
+		 *
+		 * @return the int
+		 */
 		public int decreaseDelay() {
 			return delay--;
 		}
@@ -111,12 +123,10 @@ public class Game {
 			Color.white };
 
 	/**
-	 * Computes L_inf norm for distance between two agents
-	 * 
-	 * @param a1
-	 *            agent 1
-	 * @param a2
-	 *            agent 2
+	 * Computes L_inf norm for distance between two agents.
+	 *
+	 * @param a1 agent 1
+	 * @param a2 agent 2
 	 * @return distance (maximum of X or Y difference)
 	 */
 	private int distance(Agent a1, Agent a2) {
@@ -131,10 +141,21 @@ public class Game {
 				- bp2.getY()));
 	}
 
+	/**
+	 * Instantiates a new game.
+	 *
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	private Game() throws IOException {
 
 	}
 
+	/**
+	 * Gets the team.
+	 *
+	 * @param id the id
+	 * @return the team
+	 */
 	public Team getTeam(String id) {
 
 		if (id == null)
@@ -150,6 +171,14 @@ public class Game {
 
 	}
 
+	/**
+	 * Loads properties from a file and assigns them to the game.
+	 * Creates teams that will play the game.
+	 *
+	 * @param f the game properties file
+	 * @return the game
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static Game loadFromFile(File f) throws IOException {
 
 		Game game = new Game();
@@ -263,6 +292,16 @@ public class Game {
 
 	private int step = 0;
 
+	/**
+	 * One step in the game.
+	 * This is called from a thread that is created in Main.
+	 * 
+	 * Moves all agents that are alive.
+	 * Sends all gameListeners position of each "moving" agent.
+	 * Dispatch messages to other agents.
+	 * Spawn new agents and flags.
+	 * 
+	 */
 	public synchronized void step() {
 
 		step++;
@@ -315,6 +354,9 @@ public class Game {
 
 	}
 
+	/**
+	 * Spawn new agents to the empty field next to headquarters.
+	 */
 	private void spawnNewAgents() {
 
 		for (Team t : teams.values()) {
@@ -350,6 +392,9 @@ public class Game {
 
 	}
 
+	/**
+	 * Spawn new flags.
+	 */
 	private void spawnNewFlags() {
 
 		int add = 0;
@@ -387,6 +432,13 @@ public class Game {
 
 	}
 
+	/**
+	 * Scan neighborhood.
+	 *
+	 * @param size the size of scanned area
+	 * @param agent the agent for which we perform scan
+	 * @return the neighborhood
+	 */
 	public Neighborhood scanNeighborhood(int size, Agent agent) {
 
 		Neighborhood n = new Neighborhood(size);
@@ -451,6 +503,13 @@ public class Game {
 
 	}
 
+	/**
+	 * Gets the integer property.
+	 *
+	 * @param key the key for property
+	 * @param def the default value
+	 * @return the property
+	 */
 	public int getProperty(String key, int def) {
 
 		try {
@@ -461,6 +520,13 @@ public class Game {
 
 	}
 
+	/**
+	 * Gets the boolean property.
+	 *
+	 * @param key the key for property
+	 * @param def the default value
+	 * @return the property
+	 */
 	public boolean getProperty(String key, boolean def) {
 
 		try {
@@ -471,6 +537,13 @@ public class Game {
 
 	}
 	
+	/**
+	 * Gets the string property.
+	 *
+	 * @param key the key for property
+	 * @param def the default value
+	 * @return the property
+	 */
 	public String getProperty(String key, String def) {
 
 		if (properties.getProperty(key) == null)
@@ -480,6 +553,13 @@ public class Game {
 
 	}
 
+	/**
+	 * Gets the float property.
+	 *
+	 * @param key the key for property
+	 * @param def the default value
+	 * @return the property
+	 */
 	public float getProperty(String key, float def) {
 
 		if (properties.getProperty(key) == null)
@@ -503,6 +583,11 @@ public class Game {
 		return step;
 	}
 
+	/**
+	 * Adds the listener.
+	 *
+	 * @param listener the listener
+	 */
 	public void addListener(GameListener listener) {
 		synchronized (listeners) {
 			listeners.add(listener);
@@ -510,12 +595,25 @@ public class Game {
 
 	}
 
+	/**
+	 * Removes the listener.
+	 *
+	 * @param listener the listener
+	 */
 	public void removeListener(GameListener listener) {
 		synchronized (listeners) {
 			listeners.remove(listener);
 		}
 	}
 
+	/**
+	 * Message.
+	 *
+	 * @param team the team
+	 * @param from the sending agent
+	 * @param to the receiving agent
+	 * @param message the message
+	 */
 	public synchronized void message(Team team, int from, int to, byte[] message) {
 		Client cltto = team.findById(to);
 		Client cltfrom = team.findById(from);
@@ -553,6 +651,9 @@ public class Game {
 		}
 	}
 
+	/**
+	 * Fire step event.
+	 */
 	private void fireStepEvent() {
 		
 		synchronized (listeners) {
@@ -568,6 +669,13 @@ public class Game {
 		
 	}
 	
+	/**
+	 * Move.
+	 *
+	 * @param team the team
+	 * @param agent the agent
+	 * @param direction the direction
+	 */
 	public synchronized void move(Team team, int agent, Direction direction) {
 
 		Client clt = team.findById(agent);

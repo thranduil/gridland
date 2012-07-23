@@ -19,12 +19,16 @@ package org.grid.protocol;
 
 import java.io.Serializable;
 
+// TODO: Auto-generated Javadoc
 public abstract class Message implements Serializable {
 
 	public static enum Direction {NONE, UP, DOWN, LEFT, RIGHT}
 	
 	private static final long serialVersionUID = 1L;
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	public String toString() {
 		return getClass().getSimpleName();
 	}
@@ -33,6 +37,12 @@ public abstract class Message implements Serializable {
 
 		private static final long serialVersionUID = 1L;
 
+		/**
+		 * Instantiates a new register message.
+		 *
+		 * @param team the team
+		 * @param passphrase the passphrase
+		 */
 		public RegisterMessage(String team, String passphrase) {
 			this.team = team;
 			this.passphrase = passphrase;
@@ -99,6 +109,13 @@ public abstract class Message implements Serializable {
 			this.gameSpeed = gameSpeed;
 		}
 
+		/**
+		 * Instantiates a new initialize message.
+		 *
+		 * @param id the id
+		 * @param maxMessageSize the max message size
+		 * @param gameSpeed the game speed
+		 */
 		public InitializeMessage(int id, int maxMessageSize, int gameSpeed) {
 			super();
 			this.id = id;
@@ -118,6 +135,11 @@ public abstract class Message implements Serializable {
 
 		private static final long serialVersionUID = 1L;
 		
+		/**
+		 * Instantiates a new scan message.
+		 *
+		 * @param stamp the stamp
+		 */
 		public ScanMessage(int stamp) {
 			super();
 			this.stamp = stamp;
@@ -163,6 +185,13 @@ public abstract class Message implements Serializable {
 			this.direction = direction;			
 		}
 
+		/**
+		 * Instantiates a new state message.
+		 *
+		 * @param direction the direction
+		 * @param neighborhood the neighborhood
+		 * @param hasFlag the has flag
+		 */
 		public StateMessage(Direction direction, Neighborhood neighborhood, boolean hasFlag) {
 			super();
 			this.direction = direction;
@@ -174,6 +203,11 @@ public abstract class Message implements Serializable {
 			return neighborhood;
 		}
 
+		/**
+		 * Checks for flag.
+		 *
+		 * @return true, if successful
+		 */
 		public boolean hasFlag() {
 			return hasFlag;
 		}
@@ -198,6 +232,11 @@ public abstract class Message implements Serializable {
 			this.direction = direction;
 		}
 
+		/**
+		 * Instantiates a new move message.
+		 *
+		 * @param direction the direction
+		 */
 		public MoveMessage(Direction direction) {
 			super();
 			this.direction = direction;
@@ -213,6 +252,12 @@ public abstract class Message implements Serializable {
 		
 		private byte[] message;
 
+		/**
+		 * Instantiates a new send message.
+		 *
+		 * @param to the to
+		 * @param message the message
+		 */
 		public SendMessage(int to, byte[] message) {
 			super();
 			this.to = to;
@@ -245,6 +290,12 @@ public abstract class Message implements Serializable {
 		
 		private byte[] message;
 
+		/**
+		 * Instantiates a new receive message.
+		 *
+		 * @param from the from
+		 * @param message the message
+		 */
 		public ReceiveMessage(int from, byte[] message) {
 			super();
 			this.from = from;
