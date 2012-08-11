@@ -19,16 +19,12 @@ package org.grid.protocol;
 
 import java.io.Serializable;
 
-// TODO: Auto-generated Javadoc
 public abstract class Message implements Serializable {
 
 	public static enum Direction {NONE, UP, DOWN, LEFT, RIGHT}
 	
 	private static final long serialVersionUID = 1L;
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	public String toString() {
 		return getClass().getSimpleName();
 	}
@@ -73,8 +69,7 @@ public abstract class Message implements Serializable {
 		private static final long serialVersionUID = 1L;
 		
 	}
-	
-	
+		
 	public static class InitializeMessage extends Message {
 
 		private static final long serialVersionUID = 1L;
