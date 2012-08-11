@@ -18,6 +18,8 @@ message.size=256
 #Team specification
 #Each team description contains three definitions
 #Team id (required)
-team1=samples
+team1=humans
 #Team name (optional)
-team1.name=Samples
+team1.name=Human uber alles
+
+team2=samples

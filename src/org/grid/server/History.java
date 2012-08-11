@@ -25,6 +25,9 @@ import java.util.Vector;
 import org.grid.server.Field.BodyPosition;
 
 
+/**
+ * The Class History.
+ */
 public class History implements Serializable, GameListener {
 
 	private static final long serialVersionUID = -3631531900582757001L;

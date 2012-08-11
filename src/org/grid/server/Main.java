@@ -130,7 +130,7 @@ public class Main {
 			 *
 			 * @param sender the sender
 			 * @param receiver the receiver
-			 * @param length the length
+			 * @param length the length of the message
 			 */
 			public Message(Agent sender, Agent receiver, int length) {
 				super();

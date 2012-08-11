@@ -9,6 +9,9 @@ import org.grid.server.Field.BodyPosition;
 import org.grid.server.History.HistoryPosition;
 
 
+/**
+ * The Class VisitMap.
+ */
 public class VisitMap implements Arena, Palette, GameListener {
 
 	private static Color heatPalette[];

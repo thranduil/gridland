@@ -33,6 +33,7 @@ import org.grid.protocol.Message.ScanMessage;
 import org.grid.protocol.Message.SendMessage;
 
 
+// TODO: Auto-generated Javadoc
 public class Dispatcher implements Runnable {
 
 	public static enum Status {UNKNOWN, REGISTERED, USED}
@@ -47,12 +48,21 @@ public class Dispatcher implements Runnable {
 		
 		private int totalMessages = 0, scanMessages = 0, msgMessages = 0;
 		
+		/**
+		 * Instantiates a new client.
+		 *
+		 * @param socket the socket
+		 * @throws IOException Signals that an I/O exception has occurred.
+		 */
 		public Client(Socket socket)
 				throws IOException {
 			super(socket);
 			listeners = new Vector<ClientListener>();
 		}
 		
+		/* (non-Javadoc)
+		 * @see org.grid.protocol.ProtocolSocket#handleMessage(org.grid.protocol.Message)
+		 */
 		protected void handleMessage(Message message) {
 			
 			synchronized (this) {
@@ -183,6 +193,9 @@ public class Dispatcher implements Runnable {
 			
 		}
 
+		/* (non-Javadoc)
+		 * @see org.grid.protocol.ProtocolSocket#onTerminate()
+		 */
 		@Override
 		protected void onTerminate() {
 			
@@ -196,12 +209,20 @@ public class Dispatcher implements Runnable {
 			
 		}
 		
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
 		public String toString() {
 			
 			return getRemoteAddress() + ":" + getRemotePort(); 
 			
 		}
 		
+		/**
+		 * Query message counter.
+		 *
+		 * @return the int
+		 */
 		public int queryMessageCounter() {
 			synchronized (this) {
 				int tmp = totalMessages;
@@ -214,6 +235,11 @@ public class Dispatcher implements Runnable {
 
 		private Vector<ClientListener> listeners = new Vector<ClientListener>();
 
+		/**
+		 * Adds the listener.
+		 *
+		 * @param listener the listener
+		 */
 		public void addListener(ClientListener listener) {
 			if (listeners == null)
 				listeners = new Vector<ClientListener>();
@@ -224,12 +250,22 @@ public class Dispatcher implements Runnable {
 			
 		}
 		
+		/**
+		 * Removes the listener.
+		 *
+		 * @param listener the listener
+		 */
 		public void removeListener(ClientListener listener) {
 			synchronized (listeners) {
 				listeners.remove(listener);
 			}
 		}
 		
+		/**
+		 * Agent.
+		 *
+		 * @param agent the agent
+		 */
 		private void agent(Agent agent) {
 			
 			synchronized (listeners) {
@@ -242,6 +278,11 @@ public class Dispatcher implements Runnable {
 			}
 		}
 		
+		/**
+		 * Transfer.
+		 *
+		 * @param messages the messages
+		 */
 		private void transfer(int messages) {
 			
 			synchronized (listeners) {
@@ -254,6 +295,9 @@ public class Dispatcher implements Runnable {
 			}
 		}
 		
+		/**
+		 * Traffic.
+		 */
 		public void traffic() {
 			
 			synchronized (this) {
@@ -264,6 +308,12 @@ public class Dispatcher implements Runnable {
 
 		}
 		
+		/**
+		 * Send message.
+		 *
+		 * @param from the sender
+		 * @param message the message
+		 */
 		public void send(int from, byte[] message) {
 			
 			if (status != Status.USED) return;
@@ -284,6 +334,13 @@ public class Dispatcher implements Runnable {
 	
 	private int neighborhoodSize = 5;	
 	
+	/**
+	 * Instantiates a new dispatcher.
+	 *
+	 * @param port the port
+	 * @param game the game
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public Dispatcher(int port, Game game) throws IOException {
 		
 		socket = new ServerSocket(port);
@@ -296,6 +353,12 @@ public class Dispatcher implements Runnable {
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Runnable#run()
+	 * 
+	 * 
+	 * 
+	 */
 	@Override
 	public void run() {
 		
