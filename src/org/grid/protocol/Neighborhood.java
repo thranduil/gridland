@@ -19,6 +19,7 @@ package org.grid.protocol;
 
 import java.awt.Color;
 import java.io.Serializable;
+import java.util.Arrays;
 
 import org.grid.arena.Arena;
 
@@ -57,6 +58,17 @@ public class Neighborhood implements Serializable, Arena {
 		
 		this.grid = new int[(size * 2 + 1) * (size * 2 + 1)];
 		
+	}
+	
+	public String getRawGrid()
+	{
+		String gridStr = Arrays.toString(grid);
+		return gridStr.substring(1,gridStr.length()-1);
+	}
+	
+	public void setRawGrid(int[] rawGrid)
+	{
+		this.grid == rawGrid;
 	}
 
 	public int getSize() {
