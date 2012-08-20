@@ -68,7 +68,7 @@ public class Neighborhood implements Serializable, Arena {
 	
 	public void setRawGrid(int[] rawGrid)
 	{
-		this.grid == rawGrid;
+		this.grid = rawGrid;
 	}
 
 	public int getSize() {

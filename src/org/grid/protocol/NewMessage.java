@@ -15,6 +15,11 @@ public class NewMessage {
 		data.add(Integer.toString(type.ordinal()));
 	}
 	
+	public NewMessage(ArrayList<String> message)
+	{
+		data = message;
+	}
+	
 	public MessageType getMessageType() throws Exception
 	{
 		if(data != null && data.size() > 0)
@@ -195,38 +200,75 @@ public class NewMessage {
 		}
 	}
 	
-	
-	//TODO
 	public static class MoveMessage extends NewMessage
 	{
-		public MoveMessage(int stamp) {
+		public MoveMessage(Direction direction) {
 			super(MessageType.MOVE);
-			data.add(Integer.toString(stamp));
+			data.add(Integer.toString(direction.ordinal()));
+		}
+		
+		public Direction getDirection() throws Exception
+		{
+			if(data != null && data.size() == 2)
+			{
+				Direction dir = Direction.values()[Integer.parseInt(data.get(1))];
+				return dir;
+			}
+			throw new Exception("Invalid MoveMessage");
 		}
 	}
 	
 	public static class SendMessage extends NewMessage
 	{
-		public SendMessage(int stamp) {
+		public SendMessage(int to, byte[] message) {
 			super(MessageType.SEND);
-			data.add(Integer.toString(stamp));
+			data.add(Integer.toString(to));
+			data.add(new String(message));
+		}
+		
+		public int getTo()
+		{
+			if(data != null && data.size() == 3)
+			{
+				return Integer.parseInt(data.get(1));
+			}
+			return -1;
+		}
+		
+		public byte[] getMessage()
+		{
+			if(data != null && data.size() == 3)
+			{
+				return data.get(2).getBytes();
+			}
+			return new byte[]{};
 		}
 	}
 	
 	public static class ReceiveMessage extends NewMessage
 	{
-		public ReceiveMessage(int stamp) {
+		public ReceiveMessage(int from, byte[] message) {
 			super(MessageType.RECEIVE);
-			data.add(Integer.toString(stamp));
+			data.add(Integer.toString(from));
+			data.add(new String(message));
 		}
-	}
-
-	
-	/**
-	 * Encode message.
-	 */
-	public static void EncodeMessage()
-	{
 		
+		public int getFrom()
+		{
+			if(data != null && data.size() == 3)
+			{
+				return Integer.parseInt(data.get(1));
+			}
+			return -1;
+		}
+		
+		public byte[] getMessage()
+		{
+			if(data != null && data.size() == 3)
+			{
+				return data.get(2).getBytes();
+			}
+			return new byte[]{};
+		}
 	}
 }
