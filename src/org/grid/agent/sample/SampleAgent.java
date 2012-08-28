@@ -25,7 +25,7 @@ import org.grid.agent.Membership;
 import org.grid.arena.TerminalView;
 import org.grid.protocol.Neighborhood;
 import org.grid.protocol.Position;
-import org.grid.protocol.Message.Direction;
+import org.grid.protocol.NewMessage.Direction;
 
 
 // Run: java -cp bin fri.pipt.agent.Agent localhost fri.pipt.agent.sample.SampleAgent

@@ -31,10 +31,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.grid.agent.sample.SampleAgent;
 import org.grid.protocol.Message;
 import org.grid.protocol.Neighborhood;
+import org.grid.protocol.NewMessage;
+import org.grid.protocol.NewMessage.Direction;
 import org.grid.protocol.ProtocolSocket;
-import org.grid.protocol.Message.Direction;
-import org.grid.protocol.Message.ReceiveMessage;
-import org.grid.protocol.Message.StateMessage;
 
 
 /**
@@ -142,8 +141,8 @@ public abstract class Agent {
 	private static class ClientProtocolSocket extends ProtocolSocket implements
 			Runnable {
 
-		private ConcurrentLinkedQueue<Message> inbox = new ConcurrentLinkedQueue<Message>();
-
+		private ConcurrentLinkedQueue<NewMessage> inbox = new ConcurrentLinkedQueue<NewMessage>();
+		
 		private Status status = Status.UNKNOWN;
 
 		private Agent agent = null;
@@ -171,7 +170,7 @@ public abstract class Agent {
 				passphrase = passphraseOverride;
 			}
 
-			sendMessage(new Message.RegisterMessage(team, passphrase));
+			sendMessage(new NewMessage.RegisterMessage(team, passphrase).encodeMessage());
 
 			this.name = name;
 
@@ -183,16 +182,17 @@ public abstract class Agent {
 
 		@SuppressWarnings("unchecked")
 		@Override
-		protected void handleMessage(Message message) {
-
+		protected void handleMessage(String msg) {
+			NewMessage message = new NewMessage(msg);
+			
 			switch (status) {
 			case UNKNOWN:
-				if (message instanceof Message.AcknowledgeMessage)
+				if (message.getMessageType() == NewMessage.MessageType.ACKNOWLEDGE)
 					status = Status.REGISTERED;
 				break;
 
 			case REGISTERED:
-				if (message instanceof Message.InitializeMessage) {
+				if (message.getMessageType() == NewMessage.MessageType.INITIALIZE) {
 
 					try {
 
@@ -203,16 +203,13 @@ public abstract class Agent {
 
 						Agent agent = agentClass.newInstance();
 
-						agent.id = ((Message.InitializeMessage) message)
-								.getId();
+						agent.id = ((NewMessage.InitializeMessage) message).getId();
 
 						agent.client = this;
 
-						agent.maxMessageSize = ((Message.InitializeMessage) message)
-								.getMaxMessageSize();
+						agent.maxMessageSize = ((NewMessage.InitializeMessage) message).getMaxMessageSize();
 
-						agent.gameSpeed = ((Message.InitializeMessage) message)
-								.getGameSpeed();
+						agent.gameSpeed = ((NewMessage.InitializeMessage) message).getGameSpeed();
 
 						try {
 							agent.initialize();
@@ -220,7 +217,7 @@ public abstract class Agent {
 							e.printStackTrace();
 						}
 
-						sendMessage(new Message.AcknowledgeMessage());
+						sendMessage(new NewMessage.AcknowledgeMessage().encodeMessage());
 
 						status = Status.INITIALIZED;
 						
@@ -235,22 +232,21 @@ public abstract class Agent {
 				break;
 
 			case INITIALIZED:
-				if (message instanceof Message.StateMessage)
-					super.handleMessage(message);
+				if (message.getMessageType() == NewMessage.MessageType.STATE)
+					super.handleMessage(msg);
 
-				if ((message instanceof Message.ReceiveMessage)
-						|| (message instanceof Message.StateMessage)) {
+				if ((message.getMessageType() == NewMessage.MessageType.RECEIVE)
+						|| (message.getMessageType() == NewMessage.MessageType.STATE)) {
 
 					synchronized (inbox) {
 
 						inbox.add(message);
 						inbox.notifyAll();
-
 					}
 
 				}
 
-				if (message instanceof Message.TerminateMessage) {
+				if (message.getMessageType() == NewMessage.MessageType.TERMINATE) {
 
 					try {
 						agent.terminate();
@@ -309,25 +305,20 @@ public abstract class Agent {
 							}
 						}
 
-						Message msg = inbox.poll();
+						NewMessage msg = inbox.poll();
 
 						if (agent != null && isAlive()) {
 							try {
 
-								if (msg instanceof ReceiveMessage) {
-									agent.receive(((ReceiveMessage) msg)
-											.getFrom(), ((ReceiveMessage) msg)
-											.getMessage());
-								} else if (msg instanceof StateMessage) {
-									agent
-											.state(((StateMessage) msg)
-													.getStamp(),
-													((StateMessage) msg)
-															.getNeighborhood(),
-													((StateMessage) msg)
-															.getDirection(),
-													((StateMessage) msg)
-															.hasFlag());
+								if (msg.getMessageType() == NewMessage.MessageType.RECEIVE) {
+									agent.receive( ((NewMessage.ReceiveMessage)msg).getFrom(),
+												   ((NewMessage.ReceiveMessage) msg).getMessage());
+								} else if (msg.getMessageType() == NewMessage.MessageType.STATE) {
+									//TODO: Check for stamp
+									agent.state( 0,
+												 ((NewMessage.StateMessage) msg).getNeighborhood(),
+												 ((NewMessage.StateMessage) msg).getDirection(),
+												 ((NewMessage.StateMessage) msg).getHasFlag());
 								}
 
 							} catch (Exception e) {
@@ -455,8 +446,7 @@ public abstract class Agent {
 		if (!isAlive())
 			return;
 
-		client.sendMessage(new Message.SendMessage(to, message));
-
+		client.sendMessage(new NewMessage.SendMessage(to,  message).encodeMessage());
 	}
 
 	/**
@@ -475,7 +465,7 @@ public abstract class Agent {
 		if (!isAlive())
 			return;
 
-		client.sendMessage(new Message.SendMessage(to, message.getBytes()));
+		client.sendMessage(new NewMessage.SendMessage(to,  message.getBytes()).encodeMessage());
 
 	}
 
@@ -492,7 +482,7 @@ public abstract class Agent {
 		if (!isAlive())
 			return;
 
-		client.sendMessage(new Message.MoveMessage(direction));
+		client.sendMessage(new NewMessage.MoveMessage(direction).encodeMessage());
 
 	}
 
@@ -509,8 +499,8 @@ public abstract class Agent {
 		if (!isAlive())
 			return;
 
-		client.sendMessage(new Message.ScanMessage(stamp));
-
+		client.sendMessage(new NewMessage.ScanMessage(stamp).encodeMessage());
+		
 	}
 
 	/**

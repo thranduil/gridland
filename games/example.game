@@ -21,5 +21,6 @@ message.size=256
 team1=humans
 #Team name (optional)
 team1.name=Human uber alles
+team1.passphrase=1
 
 team2=samples

@@ -29,7 +29,7 @@ import java.util.Properties;
 import java.util.Vector;
 
 import org.grid.protocol.Neighborhood;
-import org.grid.protocol.Message.Direction;
+import org.grid.protocol.NewMessage.Direction;
 import org.grid.server.Dispatcher.Client;
 import org.grid.server.Field.BodyPosition;
 import org.grid.server.Field.Cell;

@@ -25,12 +25,8 @@ import java.util.Vector;
 
 import org.grid.protocol.Message;
 import org.grid.protocol.Neighborhood;
+import org.grid.protocol.NewMessage;
 import org.grid.protocol.ProtocolSocket;
-import org.grid.protocol.Message.AcknowledgeMessage;
-import org.grid.protocol.Message.MoveMessage;
-import org.grid.protocol.Message.RegisterMessage;
-import org.grid.protocol.Message.ScanMessage;
-import org.grid.protocol.Message.SendMessage;
 
 
 // TODO: Auto-generated Javadoc
@@ -63,7 +59,7 @@ public class Dispatcher implements Runnable {
 		/* (non-Javadoc)
 		 * @see org.grid.protocol.ProtocolSocket#handleMessage(org.grid.protocol.Message)
 		 */
-		protected void handleMessage(Message message) {
+		protected void handleMessage(NewMessage message) {
 			
 			synchronized (this) {
 				totalMessages++;
@@ -75,25 +71,25 @@ public class Dispatcher implements Runnable {
 			switch (status) {
 			case UNKNOWN: {
 				
-				if (message instanceof RegisterMessage) {
-
-					team = game.getTeam(((RegisterMessage) message).getTeam());
+				if (message.getMessageType() == NewMessage.MessageType.REGISTER) {
+ 
+					team = game.getTeam(((NewMessage.RegisterMessage) message).getTeam());
 	
 					if (team == null) {
 						
-						Main.log("Unknown team: " + ((RegisterMessage) message).getTeam());
+						Main.log("Unknown team: " + ((NewMessage.RegisterMessage) message).getTeam());
 						close();
 						return;
 					}
 	
 					if (team.getPassphrase() != null) {
 					
-						String passphrase = ((RegisterMessage) message).getPassphrase();
+						String passphrase = ((NewMessage.RegisterMessage) message).getPassphrase();
 						
 						if (passphrase == null) passphrase = "";
 						
 						if (!passphrase.equals(team.getPassphrase())) {
-							Main.log("Rejected client %s for team %s: invalid passphrase", this, ((RegisterMessage) message).getTeam());
+							Main.log("Rejected client %s for team %s: invalid passphrase", this, ((NewMessage.RegisterMessage) message).getTeam());
 							close();
 							return;
 						}
@@ -106,7 +102,7 @@ public class Dispatcher implements Runnable {
 					
 					status = Status.REGISTERED;
 					
-					sendMessage(new Message.AcknowledgeMessage());
+					sendMessage(new NewMessage.AcknowledgeMessage().encodeMessage());
 				
 				}
 				
@@ -114,7 +110,7 @@ public class Dispatcher implements Runnable {
 			}
 			case REGISTERED: {
 				
-				if (agent != null && (message instanceof AcknowledgeMessage)) {
+				if (agent != null && (message.getMessageType() == NewMessage.MessageType.ACKNOWLEDGE)) {
 					
 					status = Status.USED;
 					
@@ -127,36 +123,35 @@ public class Dispatcher implements Runnable {
 				if (agent == null)
 					return;
 				
-				if (message instanceof ScanMessage) {
+				if (message.getMessageType() == NewMessage.MessageType.SCAN) {
 					
 					scanMessages++;
 					
 					Neighborhood n = game.scanNeighborhood(neighborhoodSize, getAgent());
-					
-					sendMessage(new Message.StateMessage(getAgent().getDirection(), n, agent.hasFlag()));
+					sendMessage(new NewMessage.StateMessage(getAgent().getDirection(), n, agent.hasFlag()).encodeMessage());
 					
 					return;
 				}
 				
-				if (message instanceof SendMessage) {
+				if (message.getMessageType() == NewMessage.MessageType.SEND) {
 					
 					msgMessages++;
 					
-					int to = ((SendMessage) message).getTo();
+					int to = ((NewMessage.SendMessage) message).getTo();
 					
-					if (((SendMessage)message).getMessage() == null || ((SendMessage)message).getMessage().length > maxMessageSize) {
+					if (((NewMessage.SendMessage)message).getMessage() == null || ((NewMessage.SendMessage)message).getMessage().length > maxMessageSize) {
 						Main.log("Message from %d to %d rejected: too long", agent.getId(), to);
 						return;
 					}
 					
-					game.message(team, agent.getId(), to, ((SendMessage)message).getMessage());						
+					game.message(team, agent.getId(), to, ((NewMessage.SendMessage)message).getMessage());						
 					
 					return;
 				}				
 
-				if (message instanceof MoveMessage) {
+				if (message.getMessageType() == NewMessage.MessageType.MOVE) {
 										
-					game.move(team, agent.getId(), ((MoveMessage) message).getDirection());
+					game.move(team, agent.getId(), ((NewMessage.MoveMessage) message).getDirection());
 					
 					return;
 				}	
@@ -179,7 +174,7 @@ public class Dispatcher implements Runnable {
 		
 			if (this.agent != null) {
 				status = Status.REGISTERED;
-				sendMessage(new Message.TerminateMessage());
+				sendMessage(new NewMessage.TerminateMessage().encodeMessage());
 			}
 			
 			this.agent = agent;
@@ -189,7 +184,7 @@ public class Dispatcher implements Runnable {
 			if (agent == null)
 				return;
 			
-			sendMessage(new Message.InitializeMessage(agent.getId(), maxMessageSize, game.getSpeed()));
+			sendMessage(new NewMessage.InitializeMessage(agent.getId(), maxMessageSize, game.getSpeed()).encodeMessage());
 			
 		}
 
@@ -318,7 +313,7 @@ public class Dispatcher implements Runnable {
 			
 			if (status != Status.USED) return;
 			
-			sendMessage(new Message.ReceiveMessage(from, message));
+			sendMessage(new NewMessage.ReceiveMessage(from, message).encodeMessage());
 			
 		}
 		

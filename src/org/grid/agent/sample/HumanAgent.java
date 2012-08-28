@@ -15,10 +15,10 @@ import org.grid.agent.Agent;
 import org.grid.agent.Membership;
 import org.grid.arena.SwingView;
 import org.grid.protocol.Neighborhood;
-import org.grid.protocol.Message.Direction;
+import org.grid.protocol.NewMessage.Direction;
 
 
-@Membership(team="humans",passphrase="")
+@Membership(team="humans",passphrase="1")
 public class HumanAgent extends Agent {
 
 	private JFrame window;

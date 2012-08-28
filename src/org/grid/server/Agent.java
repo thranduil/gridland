@@ -22,7 +22,7 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import org.grid.arena.Arena;
-import org.grid.protocol.Message.Direction;
+import org.grid.protocol.NewMessage.Direction;
 import org.grid.server.Field.Body;
 import org.grid.server.Field.BodyPosition;
 import org.grid.server.Field.Cell;

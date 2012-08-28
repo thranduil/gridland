@@ -14,7 +14,7 @@ import java.util.Vector;
 import org.grid.arena.Arena;
 import org.grid.protocol.Neighborhood;
 import org.grid.protocol.Position;
-import org.grid.protocol.Message.Direction;
+import org.grid.protocol.NewMessage.Direction;
 
 
 public class LocalMap {

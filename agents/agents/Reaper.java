@@ -22,7 +22,7 @@ import org.grid.agent.Membership;
 import org.grid.arena.SwingView;
 import org.grid.protocol.Neighborhood;
 import org.grid.protocol.Position;
-import org.grid.protocol.Message.Direction;
+import org.grid.protocol.NewMessage.Direction;
 
 import agents.LocalMap.Bounds;
 import agents.LocalMap.CostFormula;

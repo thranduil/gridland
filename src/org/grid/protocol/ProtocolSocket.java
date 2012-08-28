@@ -17,9 +17,9 @@
  */
 package org.grid.protocol;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -28,34 +28,22 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 // TODO: Auto-generated Javadoc
 public class ProtocolSocket {
 
-	public static class AppendableObjectOutputStream extends ObjectOutputStream {
+	public static class AppendableDataOutputStream extends DataOutputStream {
 
 		  /**
-  		 * Instantiates a new appendable object output stream.
+  		 * Instantiates a new appendable data output stream.
   		 *
   		 * @param out the out
   		 * @throws IOException Signals that an I/O exception has occurred.
   		 */
-  		public AppendableObjectOutputStream(OutputStream out) throws IOException {
+  		public AppendableDataOutputStream(OutputStream out) throws IOException {
 		    super(out);
-		    
-		    super.writeStreamHeader();
 		  }
-
-		  /* (non-Javadoc)
-  		 * @see java.io.ObjectOutputStream#writeStreamHeader()
-  		 */
-  		@Override
-		  protected void writeStreamHeader() throws IOException {
-		    // do not write a header
-		  }
-
-		}
-
+	}
 	
-	private ObjectInputStream in;
+	private DataInputStream in;
 	
-	private ObjectOutputStream out;
+	private DataOutputStream out;
 	
 	private Thread inputThread;
 	
@@ -65,9 +53,9 @@ public class ProtocolSocket {
 	
 	private boolean debug = Boolean.getBoolean("fri.pipt.protocol.debug");
 	
-	private ConcurrentLinkedQueue<Message> inQueue = new ConcurrentLinkedQueue<Message>();
+	private ConcurrentLinkedQueue<String> inQueue = new ConcurrentLinkedQueue<String>();
 	
-	private ConcurrentLinkedQueue<Message> outQueue = new ConcurrentLinkedQueue<Message>();
+	private ConcurrentLinkedQueue<String> outQueue = new ConcurrentLinkedQueue<String>();
 	
 	private Socket socket;
 	
@@ -87,36 +75,31 @@ public class ProtocolSocket {
 			public void run() {
 				
 				try {
-					in = new ObjectInputStream(socket.getInputStream());
+					in = new DataInputStream(socket.getInputStream());
 				} catch (IOException e1) {
 					return;
 				}
 				
 				while (running) {
 
+					String message = "";
 					try {
+						message = in.readUTF();
+					} catch (Exception e) {
+						e.printStackTrace();
+					} 
+					
 
-						Object obj = in.readObject();
-
-						if (obj == null || !(obj instanceof Message))
-							continue;
-						
-						Message message = (Message) obj;
-						
-						if (debug)
-							System.err.println("*** PROTOCOL INCOMING <<< " + message.getClass().getSimpleName() + " <<<");
-						
-						handleMessage(message);
-						
-					} catch (ClassNotFoundException e) {
-						if (debug)
-							e.printStackTrace();
-					} catch (IOException e) {
-						if (debug)
-							e.printStackTrace();
-						close();
+					if (message == null || message.length() == 0)
+						continue;
+				
+					
+					if (debug)
+					{
+						System.err.println("*** MESSAGE INCOMING <<< " + message + " <<<");
 					}
-
+					
+					handleMessage(message);
 				}
 			}
 			
@@ -125,12 +108,13 @@ public class ProtocolSocket {
 		
 		outputThread = new Thread(new Runnable() {
 
+			//Sending messages
 			@Override
 			public void run() {
 				
 
 				try {
-					out = new ObjectOutputStream(socket.getOutputStream());
+					out = new DataOutputStream(socket.getOutputStream());
 				} catch (IOException e1) {
 					return;
 				}
@@ -147,12 +131,12 @@ public class ProtocolSocket {
 							}
 						}
 
-						Message message = outQueue.poll();
+						String message = outQueue.poll();
 						
 						if (debug)
-							System.err.println("*** PROTOCOL OUTGOING >>> " + message.getClass().getSimpleName() + " >>>");
+							System.err.println("*** PROTOCOL OUTGOING >>> " + message + " >>>");
 						
-						out.writeObject(message);
+						out.writeUTF(message);
 
 						out.flush();
 						
@@ -160,6 +144,9 @@ public class ProtocolSocket {
 						if (debug)
 							e.printStackTrace();
 						close();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					} 
 
 				}
@@ -174,7 +161,7 @@ public class ProtocolSocket {
 	 *
 	 * @return the message
 	 */
-	public Message receiveMessage() {
+	public String receiveMessage() {
 		
 		synchronized (inQueue) {
 		
@@ -192,7 +179,7 @@ public class ProtocolSocket {
 	 *
 	 * @return the message
 	 */
-	public Message waitMessage() {
+	public String waitMessage() {
 		
 		synchronized (inQueue) {
 			while (true) {
@@ -213,9 +200,9 @@ public class ProtocolSocket {
 	 *
 	 * @param msg the msg
 	 */
-	public void sendMessage(Message msg) {
+	public void sendMessage(String msg) {
 		
-		if (msg == null)
+		if (msg == null || msg.length() == 0)
 			return;
 			
 		synchronized (outQueue) {
@@ -255,12 +242,11 @@ public class ProtocolSocket {
 	/**
 	 * Handle message.
 	 *
-	 * @param message the message
+	 * @param message the message string
 	 */
-	protected void handleMessage(Message message) {
+	protected void handleMessage(String message) {
 		
 		synchronized (inQueue) {
-			
 			inQueue.add(message);
 			inQueue.notifyAll();
 			
@@ -282,5 +268,5 @@ public class ProtocolSocket {
 	public int getRemotePort() {
 		return socket.getPort();
 	}
-	
+
 }

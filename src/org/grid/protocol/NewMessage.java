@@ -1,12 +1,13 @@
 package org.grid.protocol;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 // TODO: Auto-generated Javadoc
 public class NewMessage {
 
 	protected ArrayList<String> data;
-	public static enum MessageType { REGISTER, ACKNOWLEDGE, INITIALIZE, TERMINATE, SCAN, STATE, MOVE, SEND, RECEIVE};
+	public static enum MessageType { REGISTER, ACKNOWLEDGE, INITIALIZE, TERMINATE, SCAN, STATE, MOVE, SEND, RECEIVE, UNKNOWN};
 	public static enum Direction {NONE, UP, DOWN, LEFT, RIGHT};
 	
 	public NewMessage(MessageType type)
@@ -15,19 +16,36 @@ public class NewMessage {
 		data.add(Integer.toString(type.ordinal()));
 	}
 	
-	public NewMessage(ArrayList<String> message)
+	public NewMessage(String message)
 	{
-		data = message;
+		String[] messageParts = message.split(";");
+		data = new ArrayList<String>(Arrays.asList(messageParts));
 	}
 	
-	public MessageType getMessageType() throws Exception
+	public MessageType getMessageType()
 	{
 		if(data != null && data.size() > 0)
 		{
 			MessageType type = MessageType.values()[Integer.parseInt(data.get(0))];
 			return type;
 		}
-		throw new Exception("Data for message is not set.");
+		else
+		{
+			System.err.println("NewMessage.getMessageType() - Unknown type of message");
+			return MessageType.UNKNOWN;
+		}
+	}
+	
+	public String encodeMessage()
+	{
+		StringBuilder sb = new StringBuilder();
+		for(String s : this.data)
+		{
+			sb.append(s);
+			sb.append(";");
+			
+		}
+		return sb.toString();
 	}
 	
 	public static class RegisterMessage extends NewMessage
@@ -157,7 +175,7 @@ public class NewMessage {
 			}
 		}
 		
-		public int[] getNeighborhood()
+		public Neighborhood getNeighborhood()
 		{	
 			if(data != null && data.size() == 5)
 			{
@@ -175,7 +193,9 @@ public class NewMessage {
 				{
 					System.out.println("getNeighborhood() - Neighborhood is not the right size");
 				}
-				return result;
+				Neighborhood n = new Neighborhood(size);
+				n.setRawGrid(result);
+				return n;
 			}
 			else
 			{
@@ -207,14 +227,15 @@ public class NewMessage {
 			data.add(Integer.toString(direction.ordinal()));
 		}
 		
-		public Direction getDirection() throws Exception
+		public Direction getDirection()
 		{
 			if(data != null && data.size() == 2)
 			{
 				Direction dir = Direction.values()[Integer.parseInt(data.get(1))];
 				return dir;
 			}
-			throw new Exception("Invalid MoveMessage");
+			System.err.println("MoveMessage.getDirection - Data is null or not correnct size");
+			return Direction.NONE;
 		}
 	}
 	
