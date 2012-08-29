@@ -211,7 +211,7 @@ public class NewMessage {
 				{
 					for(int i = 0 ; i < result.length; i++)
 					{
-						result[0] = Integer.parseInt(nArray[i]);
+						result[i] = Integer.parseInt(nArray[i]);
 					}
 				}
 				else
@@ -232,7 +232,7 @@ public class NewMessage {
 		{
 			if(data != null && data.size() == 5)
 			{
-				if(data.get(4) == "0")
+				if(data.get(4).equals("0"))
 					return false;
 				else
 					return true;
