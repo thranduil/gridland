@@ -161,6 +161,11 @@ public class Dispatcher implements Runnable {
 					
 					game.move(team, agent.getId(), xMessage.getDirection());
 					
+					//after moving agent, reply with current state
+					Neighborhood n = game.scanNeighborhood(neighborhoodSize, getAgent());
+					sendMessage(new NewMessage.StateMessage(getAgent().getDirection(), n, agent.hasFlag()).encodeMessage());
+					
+					
 					return;
 				}	
 				

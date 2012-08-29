@@ -124,7 +124,7 @@ public class HumanAgent extends Agent {
 	private void scanAndWait() throws InterruptedException {
 
 		synchronized (waitMutex) {
-			scan(0);
+			move(Direction.NONE);
 			waitMutex.wait();
 		}
 
