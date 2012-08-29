@@ -26,6 +26,7 @@ import java.util.Vector;
 import org.grid.protocol.Message;
 import org.grid.protocol.Neighborhood;
 import org.grid.protocol.NewMessage;
+import org.grid.protocol.NewMessage.RegisterMessage;
 import org.grid.protocol.ProtocolSocket;
 
 
@@ -59,7 +60,9 @@ public class Dispatcher implements Runnable {
 		/* (non-Javadoc)
 		 * @see org.grid.protocol.ProtocolSocket#handleMessage(org.grid.protocol.Message)
 		 */
-		protected void handleMessage(NewMessage message) {
+		protected void handleMessage(String msg) {
+			
+			NewMessage message = new NewMessage(msg);
 			
 			synchronized (this) {
 				totalMessages++;
@@ -72,24 +75,25 @@ public class Dispatcher implements Runnable {
 			case UNKNOWN: {
 				
 				if (message.getMessageType() == NewMessage.MessageType.REGISTER) {
- 
-					team = game.getTeam(((NewMessage.RegisterMessage) message).getTeam());
+					
+					NewMessage.RegisterMessage xMessage = new NewMessage.RegisterMessage(message);
+					team = game.getTeam(xMessage.getTeam());
 	
 					if (team == null) {
 						
-						Main.log("Unknown team: " + ((NewMessage.RegisterMessage) message).getTeam());
+						Main.log("Unknown team: " + xMessage.getTeam());
 						close();
 						return;
 					}
 	
 					if (team.getPassphrase() != null) {
 					
-						String passphrase = ((NewMessage.RegisterMessage) message).getPassphrase();
+						String passphrase = xMessage.getPassphrase();
 						
 						if (passphrase == null) passphrase = "";
 						
 						if (!passphrase.equals(team.getPassphrase())) {
-							Main.log("Rejected client %s for team %s: invalid passphrase", this, ((NewMessage.RegisterMessage) message).getTeam());
+							Main.log("Rejected client %s for team %s: invalid passphrase", this, xMessage.getTeam());
 							close();
 							return;
 						}
@@ -137,21 +141,25 @@ public class Dispatcher implements Runnable {
 					
 					msgMessages++;
 					
-					int to = ((NewMessage.SendMessage) message).getTo();
+					NewMessage.SendMessage xMessage = new NewMessage.SendMessage(message);
 					
-					if (((NewMessage.SendMessage)message).getMessage() == null || ((NewMessage.SendMessage)message).getMessage().length > maxMessageSize) {
+					int to = xMessage.getTo();
+					
+					if (xMessage.getMessage() == null || xMessage.getMessage().length > maxMessageSize) {
 						Main.log("Message from %d to %d rejected: too long", agent.getId(), to);
 						return;
 					}
 					
-					game.message(team, agent.getId(), to, ((NewMessage.SendMessage)message).getMessage());						
+					game.message(team, agent.getId(), to, xMessage.getMessage());						
 					
 					return;
 				}				
 
 				if (message.getMessageType() == NewMessage.MessageType.MOVE) {
-										
-					game.move(team, agent.getId(), ((NewMessage.MoveMessage) message).getDirection());
+						
+					NewMessage.MoveMessage xMessage = new NewMessage.MoveMessage(message);
+					
+					game.move(team, agent.getId(), xMessage.getDirection());
 					
 					return;
 				}	

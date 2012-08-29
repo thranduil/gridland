@@ -22,6 +22,11 @@ public class NewMessage {
 		data = new ArrayList<String>(Arrays.asList(messageParts));
 	}
 	
+	protected NewMessage(NewMessage msg)
+	{
+		data = msg.data;
+	}
+	
 	public MessageType getMessageType()
 	{
 		if(data != null && data.size() > 0)
@@ -54,6 +59,11 @@ public class NewMessage {
 			super(MessageType.REGISTER);
 			data.add(team);
 			data.add(passphrase);
+		}
+		
+		public RegisterMessage(NewMessage msg)
+		{
+			super(msg);
 		}
 		
 		public String getTeam()
@@ -89,6 +99,11 @@ public class NewMessage {
 			data.add(Integer.toString(id));
 			data.add(Integer.toString(maxMessageSize));
 			data.add(Integer.toString(gameSpeed));
+		}
+		
+		public InitializeMessage(NewMessage msg)
+		{
+			super(msg);
 		}
 		
 		public int getId()
@@ -133,6 +148,11 @@ public class NewMessage {
 			data.add(Integer.toString(stamp));
 		}
 		
+		public ScanMessage(NewMessage msg)
+		{
+			super(msg);
+		}
+		
 		public int getStamp()
 		{
 			if(data != null && data.size() == 2)
@@ -151,6 +171,11 @@ public class NewMessage {
 			data.add(Integer.toString((neighborhood.getSize())));
 			data.add(neighborhood.getRawGrid());
 			data.add(hasFlag ? "1" : "0");
+		}
+		
+		public StateMessage(NewMessage msg)
+		{
+			super(msg);
 		}
 		
 		public Direction getDirection() throws Exception
@@ -227,6 +252,11 @@ public class NewMessage {
 			data.add(Integer.toString(direction.ordinal()));
 		}
 		
+		public MoveMessage(NewMessage msg)
+		{
+			super(msg);
+		}
+		
 		public Direction getDirection()
 		{
 			if(data != null && data.size() == 2)
@@ -245,6 +275,11 @@ public class NewMessage {
 			super(MessageType.SEND);
 			data.add(Integer.toString(to));
 			data.add(new String(message));
+		}
+		
+		public SendMessage(NewMessage msg)
+		{
+			super(msg);
 		}
 		
 		public int getTo()
@@ -272,6 +307,11 @@ public class NewMessage {
 			super(MessageType.RECEIVE);
 			data.add(Integer.toString(from));
 			data.add(new String(message));
+		}
+		
+		public ReceiveMessage(NewMessage msg)
+		{
+			super(msg);
 		}
 		
 		public int getFrom()

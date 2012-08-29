@@ -203,13 +203,15 @@ public abstract class Agent {
 
 						Agent agent = agentClass.newInstance();
 
-						agent.id = ((NewMessage.InitializeMessage) message).getId();
+						NewMessage.InitializeMessage xMessage = new NewMessage.InitializeMessage(message);
+						
+						agent.id = xMessage.getId();
 
 						agent.client = this;
 
-						agent.maxMessageSize = ((NewMessage.InitializeMessage) message).getMaxMessageSize();
+						agent.maxMessageSize = xMessage.getMaxMessageSize();
 
-						agent.gameSpeed = ((NewMessage.InitializeMessage) message).getGameSpeed();
+						agent.gameSpeed = xMessage.getGameSpeed();
 
 						try {
 							agent.initialize();
@@ -311,14 +313,19 @@ public abstract class Agent {
 							try {
 
 								if (msg.getMessageType() == NewMessage.MessageType.RECEIVE) {
-									agent.receive( ((NewMessage.ReceiveMessage)msg).getFrom(),
-												   ((NewMessage.ReceiveMessage) msg).getMessage());
+									
+									NewMessage.ReceiveMessage xMessage = new NewMessage.ReceiveMessage(msg);
+									agent.receive(xMessage.getFrom(),
+												  xMessage.getMessage());
+									
 								} else if (msg.getMessageType() == NewMessage.MessageType.STATE) {
+									
+									NewMessage.StateMessage xMessage = new NewMessage.StateMessage(msg);
 									//TODO: Check for stamp
-									agent.state( 0,
-												 ((NewMessage.StateMessage) msg).getNeighborhood(),
-												 ((NewMessage.StateMessage) msg).getDirection(),
-												 ((NewMessage.StateMessage) msg).getHasFlag());
+									agent.state(0,
+												xMessage.getNeighborhood(),
+												xMessage.getDirection(),
+												xMessage.getHasFlag());
 								}
 
 							} catch (Exception e) {

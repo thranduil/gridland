@@ -30,40 +30,44 @@ public class ProtocolSocket {
 
 	public static class AppendableDataOutputStream extends DataOutputStream {
 
-		  /**
-  		 * Instantiates a new appendable data output stream.
-  		 *
-  		 * @param out the out
-  		 * @throws IOException Signals that an I/O exception has occurred.
-  		 */
-  		public AppendableDataOutputStream(OutputStream out) throws IOException {
-		    super(out);
-		  }
+		/**
+		 * Instantiates a new appendable data output stream.
+		 * 
+		 * @param out
+		 *            the out
+		 * @throws IOException
+		 *             Signals that an I/O exception has occurred.
+		 */
+		public AppendableDataOutputStream(OutputStream out) throws IOException {
+			super(out);
+		}
 	}
-	
+
 	private DataInputStream in;
-	
+
 	private DataOutputStream out;
-	
+
 	private Thread inputThread;
-	
+
 	private Thread outputThread;
-	
+
 	private boolean running = true;
-	
-	private boolean debug = Boolean.getBoolean("fri.pipt.protocol.debug");
-	
+
+	private boolean debug = true;
+
 	private ConcurrentLinkedQueue<String> inQueue = new ConcurrentLinkedQueue<String>();
-	
+
 	private ConcurrentLinkedQueue<String> outQueue = new ConcurrentLinkedQueue<String>();
-	
+
 	private Socket socket;
-	
+
 	/**
 	 * Instantiates a new protocol socket.
-	 *
-	 * @param sck the socket
-	 * @throws IOException Signals that an I/O exception has occurred.
+	 * 
+	 * @param sck
+	 *            the socket
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
 	 */
 	public ProtocolSocket(Socket sck) throws IOException {
 
@@ -73,13 +77,13 @@ public class ProtocolSocket {
 
 			@Override
 			public void run() {
-				
+
 				try {
 					in = new DataInputStream(socket.getInputStream());
 				} catch (IOException e1) {
 					return;
 				}
-				
+
 				while (running) {
 
 					String message = "";
@@ -87,31 +91,28 @@ public class ProtocolSocket {
 						message = in.readUTF();
 					} catch (Exception e) {
 						e.printStackTrace();
-					} 
-					
+					}
 
 					if (message == null || message.length() == 0)
 						continue;
-				
-					
-					if (debug)
-					{
-						System.err.println("*** MESSAGE INCOMING <<< " + message + " <<<");
+
+					if (debug) {
+						System.err.println("*** MESSAGE INCOMING <<< "
+								+ message + " <<<");
 					}
-					
+
 					handleMessage(message);
 				}
 			}
-			
+
 		});
 		inputThread.start();
-		
+
 		outputThread = new Thread(new Runnable() {
 
-			//Sending messages
+			// Sending messages
 			@Override
 			public void run() {
-				
 
 				try {
 					out = new DataOutputStream(socket.getOutputStream());
@@ -119,7 +120,6 @@ public class ProtocolSocket {
 					return;
 				}
 
-				
 				while (running) {
 
 					try {
@@ -127,19 +127,21 @@ public class ProtocolSocket {
 							while (outQueue.isEmpty()) {
 								try {
 									outQueue.wait();
-								} catch (InterruptedException e) {}
+								} catch (InterruptedException e) {
+								}
 							}
 						}
 
 						String message = outQueue.poll();
-						
+
 						if (debug)
-							System.err.println("*** PROTOCOL OUTGOING >>> " + message + " >>>");
-						
+							System.err.println("*** PROTOCOL OUTGOING >>> "
+									+ message + " >>>");
+
 						out.writeUTF(message);
 
 						out.flush();
-						
+
 					} catch (IOException e) {
 						if (debug)
 							e.printStackTrace();
@@ -147,124 +149,128 @@ public class ProtocolSocket {
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
-					} 
+					}
 
 				}
 			}
-			
+
 		});
 		outputThread.start();
 	}
-	
+
 	/**
 	 * Receive message.
-	 *
+	 * 
 	 * @return the message
 	 */
 	public String receiveMessage() {
-		
+
 		synchronized (inQueue) {
-		
+
 			if (inQueue.isEmpty())
 				return null;
-		
+
 			return inQueue.poll();
-			
+
 		}
-		
+
 	}
-	
+
 	/**
 	 * Wait message.
-	 *
+	 * 
 	 * @return the message
 	 */
 	public String waitMessage() {
-		
+
 		synchronized (inQueue) {
 			while (true) {
-			
+
 				if (inQueue.isEmpty())
 					try {
 						inQueue.wait();
-					} catch (InterruptedException e) {}
-				else break;
+					} catch (InterruptedException e) {
+					}
+				else
+					break;
 			}
 			return inQueue.poll();
 		}
-		
+
 	}
-	
+
 	/**
 	 * Send message.
-	 *
-	 * @param msg the msg
+	 * 
+	 * @param msg
+	 *            the msg
 	 */
 	public void sendMessage(String msg) {
-		
+
 		if (msg == null || msg.length() == 0)
 			return;
-			
+
 		synchronized (outQueue) {
-		
+
 			outQueue.add(msg);
-		
+
 			outQueue.notifyAll();
-			
+
 		}
-		
+
 	}
-	
+
 	/**
 	 * Close.
 	 */
 	public void close() {
-		
+
 		outQueue.clear();
-		
+
 		running = false;
-		
+
 		onTerminate();
-		
+
 		try {
 			in.close();
 		} catch (IOException e) {
 		} catch (NullPointerException e) {
 		}
-		
+
 		try {
 			out.close();
 		} catch (IOException e) {
 		} catch (NullPointerException e) {
 		}
 	}
-	
+
 	/**
 	 * Handle message.
-	 *
-	 * @param message the message string
+	 * 
+	 * @param message
+	 *            the message string
 	 */
 	protected void handleMessage(String message) {
-		
+
 		synchronized (inQueue) {
 			inQueue.add(message);
 			inQueue.notifyAll();
-			
+
 		}
-		
+
 	}
-	
+
 	/**
 	 * On terminate.
 	 */
 	protected void onTerminate() {
-		
+
 	}
-	
+
 	public InetAddress getRemoteAddress() {
 		return socket.getInetAddress();
 	}
-	
+
 	public int getRemotePort() {
 		return socket.getPort();
 	}
