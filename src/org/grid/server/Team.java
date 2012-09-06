@@ -18,7 +18,9 @@
 package org.grid.server;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -328,6 +330,18 @@ public class Team {
 	
 	public int getActiveFlagsCount() {
 		return flags.size();
+	}
+	public List<Flag> getAllFlags()
+	{
+		ArrayList<Flag> result = new ArrayList<Flag>();
+		
+		Iterator<Flag> i = flags.iterator();
+		while(i.hasNext())
+		{
+			result.add(i.next());
+		}
+		
+		return result;
 	}
 	
 	public String toString() {

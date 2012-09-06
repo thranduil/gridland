@@ -402,7 +402,9 @@ public class Field implements Arena {
 
 					arena.putBody(team.getHeadquarters(), new BodyPosition(hqs[i].getX(), hqs[i].getY()));
 					
-					if (game.getFlagMode() == FlagMode.UNIQUE) {
+					//Put flag from to the arena for unique and benchmark mode
+					//For benchmark mode more flags will be added to surrounding fields of this flag
+					if (game.getFlagMode() == FlagMode.UNIQUE || game.getFlagMode() == FlagMode.BENCHMARK) {
 						for (Position p : flags[i])
 						arena.putBody(team.newFlag(game.getFlagWeight()), new BodyPosition(p.getX(), p.getY()));
 					}
@@ -653,6 +655,7 @@ public class Field implements Arena {
 
 		return 0;
 	}
+	
 
 	@Override
 	public Color getBodyColor(int x, int y) {

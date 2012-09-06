@@ -48,7 +48,7 @@ public class Game {
 	 * 
 	 */
 	public enum FlagMode {
-		UNIQUE, RANDOM, RESPAWN
+		UNIQUE, RANDOM, RESPAWN, BENCHMARK
 	}
 
 	public static class MessageContainter {
@@ -267,6 +267,13 @@ public class Game {
 			game.flagPoolCount = game.getProperty("gameplay.flags.pool", 10);
 
 		}
+		
+		if(game.flagMode == FlagMode.BENCHMARK)
+		{
+			game.flagPoolCount = game.getProperty("gameplay.flags.pool", 100);
+			//instantly spawn all flags
+			game.flagSpawnFrequency = 0;
+		}
 
 		game.flagWeight = Math.min(30, Math.max(0, game.getProperty("gameplay.flags.weight", 1f)));
 		
@@ -396,7 +403,7 @@ public class Game {
 	 * Spawn new flags.
 	 */
 	private void spawnNewFlags() {
-
+		
 		int add = 0;
 
 		for (Team t : teams.values()) {
@@ -408,26 +415,55 @@ public class Game {
 		if (add == 0)
 			return;
 
-		List<Cell> freeCells = field.listEmptyFields(true);
-
-		if (freeCells.size() < add)
-			return;
-
-		Vector<Flag> flags = new Vector<Flag>();
-
-		for (Team t : teams.values()) {
-
-			int nf = Math.max(0, flagPoolCount - t.getActiveFlagsCount());
-			for (int i = 0; i < nf; i++)
-				flags.add(t.newFlag(getFlagWeight()));
+		//if game mode is benchmark put flags around center flag
+		if(flagMode == FlagMode.BENCHMARK)
+		{
+			for(Team t : teams.values())
+			{
+				List<Flag> flags = t.getAllFlags();
+				if(flags.size() > 0)
+				{
+					Flag centerFlag = flags.get(0);
+					BodyPosition cFlagPosition = field.getPosition(centerFlag);
+					
+					if(cFlagPosition == null)
+					{
+						System.err.println("spawnNewFlags() - Can not find center flag.");
+						return;
+					}
+					
+					int nf = Math.max(0, flagPoolCount - t.getActiveFlagsCount());
+					for(int i = 0; i < nf; i++)
+					{
+						//put all the remaining flags around centerFlag
+						field.putBodyCloseTo(t.newFlag(getFlagWeight()), cFlagPosition);
+					}
+				}
+			}
 		}
-
-		Collections.shuffle(flags);
-		Collections.shuffle(freeCells);
-
-		for (int i = 0; i < flags.size(); i++) {
-			field.putBody(flags.get(i), new BodyPosition(freeCells.get(i)
-					.getPosition(), 0, 0));
+		else
+		{
+			List<Cell> freeCells = field.listEmptyFields(true);
+	
+			if (freeCells.size() < add)
+				return;
+	
+			Vector<Flag> flags = new Vector<Flag>();
+	
+			for (Team t : teams.values()) {
+	
+				int nf = Math.max(0, flagPoolCount - t.getActiveFlagsCount());
+				for (int i = 0; i < nf; i++)
+					flags.add(t.newFlag(getFlagWeight()));
+			}
+	
+			Collections.shuffle(flags);
+			Collections.shuffle(freeCells);
+	
+			for (int i = 0; i < flags.size(); i++) {
+				field.putBody(flags.get(i), new BodyPosition(freeCells.get(i)
+						.getPosition(), 0, 0));
+			}
 		}
 
 	}
