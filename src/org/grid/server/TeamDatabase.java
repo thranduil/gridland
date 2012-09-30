@@ -9,6 +9,8 @@ import java.io.PrintStream;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
+import org.grid.server.Game.FlagMode;
+
 public class TeamDatabase {
 
 	public static class TeamData {
@@ -71,13 +73,13 @@ public class TeamDatabase {
 		
 	}
 	
-	public Team createTeam(String id) {
+	public Team createTeam(String id, FlagMode mode) {
 		
 		TeamData d = data.get(id);
 		
 		if (d == null) return null;
 		
-		Team team = new Team(d.getId(), d.getColor());
+		Team team = new Team(d.getId(), d.getColor(), mode);
 		
 		team.setPassphrase(d.getPassphrase());
 		

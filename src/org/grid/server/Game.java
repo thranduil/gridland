@@ -225,9 +225,9 @@ public class Game {
 				break;
 
 			if (database == null) {
-				game.teams.put(id, new Team(id, colors[index - 1]));
+				game.teams.put(id, new Team(id, colors[index - 1], game.flagMode));
 			} else {
-				Team team = database.createTeam(id);
+				Team team = database.createTeam(id, game.flagMode);
 				if (team == null) break;
 				game.teams.put(id, team);
 			}
@@ -518,6 +518,7 @@ public class Game {
 						continue;
 					}
 
+					//TODO: chenge here to send friendly flag if gamemode is benchmark
 					if (c.getBody() instanceof Flag) {
 						n.setCell(i, j,
 								t == agent.getTeam() ? Neighborhood.FLAG

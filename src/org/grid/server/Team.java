@@ -30,6 +30,7 @@ import org.grid.arena.Arena;
 import org.grid.server.Dispatcher.Client;
 import org.grid.server.Field.Body;
 import org.grid.server.Field.BodyPosition;
+import org.grid.server.Game.FlagMode;
 import org.grid.server.Game.MessageContainter;
 
 
@@ -75,7 +76,6 @@ public class Team {
 		}
 
 		public void putFlag(Flag flag) {
-			
 			if (flag != null && flag.getTeam() == getTeam()) {
 				
 				if (getTeam().flags.contains(flag)) {
@@ -89,6 +89,17 @@ public class Team {
 				}
 			}
 			
+		}
+		
+		
+		/**
+		 * Score point.
+		 * Used for benchmark game mode only.
+		 */
+		public void scorePoint()
+		{
+			getTeam().score++;
+			getTeam().scoreChange(getTeam().score);
 		}
 		
 	}
@@ -109,16 +120,24 @@ public class Team {
 	
 	private Color color;
 	
+	private FlagMode flagMode;
+	
 	private int score = 0;
 	
-	public Team(String name, Color color) {
+	public Team(String name, Color color, FlagMode mode) {
 		
 		this.name = name;
 		this.color = color;
 		this.passphrase = null;
+		this.flagMode = mode;
 
 		hq = new Headquarters(Arena.TILE_HEADQUARTERS, this);
 
+	}
+	
+	public boolean isBenchmark()
+	{
+		return flagMode == FlagMode.BENCHMARK;
 	}
 	
 	public String getPassphrase() {

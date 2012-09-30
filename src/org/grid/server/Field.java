@@ -190,15 +190,14 @@ public class Field implements Arena {
 
 		private Cell findNext() {
 			
-			int direction = offset / (2 * radius);
-			
 			int cx = 0;
 			int cy = 0;
 			
 			int rr = radius;
 			
 			while (true) {
-			
+				int direction = offset / (2 * radius);
+				
 				switch (direction) {
 				case 0:
 					cx = x - radius + offset;
@@ -402,7 +401,7 @@ public class Field implements Arena {
 
 					arena.putBody(team.getHeadquarters(), new BodyPosition(hqs[i].getX(), hqs[i].getY()));
 					
-					//Put flag from to the arena for unique and benchmark mode
+					//Put flag to the arena for unique and benchmark mode
 					//For benchmark mode more flags will be added to surrounding fields of this flag
 					if (game.getFlagMode() == FlagMode.UNIQUE || game.getFlagMode() == FlagMode.BENCHMARK) {
 						for (Position p : flags[i])
