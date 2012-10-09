@@ -110,6 +110,28 @@ public class SwingView extends JPanel implements ArenaView {
 		
 		return flag;
 	}
+	
+	public static Polygon getFoodGlyph(int cellSize)
+	{
+		Polygon food = new Polygon();
+		food.addPoint((int)(0.1 * cellSize),(int)(0.5 * cellSize));
+		food.addPoint((int)(0.4 * cellSize), (int)(0.7 * cellSize));
+		food.addPoint((int)(0.6 * cellSize), (int)(0.7 * cellSize));
+		food.addPoint((int)(0.9 * cellSize),(int)(0.5 * cellSize));
+		food.addPoint((int)(0.1 * cellSize), (int)(0.5 * cellSize));
+		food.addPoint((int)(0.1 * cellSize), (int)(0.3 * cellSize));
+		food.addPoint((int)(0.9 * cellSize), (int)(0.3 * cellSize));
+		food.addPoint((int)(0.9 * cellSize),(int)(0.5 * cellSize));
+		food.addPoint((int)(0.9 * cellSize), (int)(0.3 * cellSize));
+		food.addPoint((int)(0.6 * cellSize), (int)(0.1 * cellSize));
+		food.addPoint((int)(0.4 * cellSize), (int)(0.1 * cellSize));
+		food.addPoint((int)(0.1 * cellSize), (int)(0.3 * cellSize));
+		
+		return food;
+		
+	}
+	
+
 
 	private Dimension size = new Dimension(100, 100);
 
@@ -129,7 +151,14 @@ public class SwingView extends JPanel implements ArenaView {
 		this(24);
 
 	}
-
+	
+	private boolean isFood = false;
+	
+	public void SetBenchmarkMode(boolean isBenchmark)
+	{
+		isFood = isBenchmark; 
+	}
+	
 	protected void paintBackground(Graphics g, Arena view) {
 		
 		Palette p = palette == null ? grassPalette : palette;
@@ -183,7 +212,7 @@ public class SwingView extends JPanel implements ArenaView {
 					drawBorderedCircle(g, i * cellSize + cellBorder + translateX, j * cellSize
 							+ cellBorder + translateY, cellSize - 2 * cellBorder);
 					break;
-					
+				
 				case Arena.TILE_AGENT_FLAG:
 					drawBorderedCircle(g, i * cellSize + cellBorder + translateX, j * cellSize
 							+ cellBorder + translateY, cellSize - 2 * cellBorder);
@@ -193,14 +222,18 @@ public class SwingView extends JPanel implements ArenaView {
 					g.fillPolygon(flag);
 					flag.translate(-i * cellSize - translateX, -j * cellSize - translateY);
 					g.setPaintMode();
+					
 					break;
-					
-					
+						
 				case Arena.TILE_HEADQUARTERS:
 					drawBorderedSquare(g, i * cellSize + cellBorder + translateX, j * cellSize
 							+ cellBorder + translateY, cellSize - 2 * cellBorder);
 					break;
 				case Arena.TILE_FLAG:
+					if(isFood)
+					{
+						g.setColor(Color.DARK_GRAY);
+					}
 					drawBorderedPolygon(g, i * cellSize + translateX, j * cellSize + translateY, flag);
 					break;
 				}
@@ -227,7 +260,7 @@ public class SwingView extends JPanel implements ArenaView {
 	private void drawBorderedPolygon(Graphics g, int x, int y, Polygon p) {
 		p.translate(x, y);
 		g.fillPolygon(p);
-		g.setColor(borderColor);
+ 		g.setColor(Color.BLACK);
 		g.drawPolygon(p);
 		p.translate(-x, -y);
 	}
@@ -293,7 +326,14 @@ public class SwingView extends JPanel implements ArenaView {
 		
 		this.cellBorder = Math.max(1, Math.round((float)this.cellSize * 0.1f));
 		
-		flag = getFlagGlyph(this.cellSize);
+		if(isFood)
+		{
+			flag = getFoodGlyph(this.cellSize);
+		}
+		else
+		{
+			flag = getFlagGlyph(this.cellSize);
+		}
 		
 		synchronized (this) {
 	

@@ -53,6 +53,7 @@ import org.grid.server.Dispatcher.Client;
 import org.grid.server.Field.Body;
 import org.grid.server.Field.BodyPosition;
 import org.grid.server.Field.Cell;
+import org.grid.server.Game.FlagMode;
 
 
 // TODO: Auto-generated Javadoc
@@ -386,6 +387,12 @@ public class Main {
 						: "not enabled"));
 
 		game = Game.loadFromFile(new File(args[0]));
+		
+		//sets if food is displayed on GUI
+		if(game.getFlagMode() == FlagMode.BENCHMARK)
+		{
+			view.SetBenchmarkMode(true);
+		}
 
 		try {
 			log = new PrintWriter(new File(logDate.format(new Date()) + "_" + game.getTitle() + ".log"));
