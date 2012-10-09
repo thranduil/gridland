@@ -1,9 +1,11 @@
 package thesis_agents;
 
 import org.grid.agent.Agent;
+import org.grid.agent.Membership;
 import org.grid.protocol.Neighborhood;
 import org.grid.protocol.NewMessage.Direction;
 
+@Membership(team = "aExplorer", passphrase = "1")
 public class AExplorer extends Agent{
 
 	@Override

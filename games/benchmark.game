@@ -23,8 +23,7 @@ message.size=256
 #Team specification
 #Each team description contains three definitions
 #Team id (required)
-team1=humans
+team1=dExplorer
 #Team name (optional)
-team1.passphrase=1
 
-team2=samples
+team2=humans
