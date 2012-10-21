@@ -25,7 +25,7 @@ public class DExplorer extends Agent{
 
 	@Override
 	public void initialize() {
-		localMap = new Map();
+		localMap = new Map(getId());
 		states = new ConcurrentLinkedQueue<StateMessage>();
 		
 	}

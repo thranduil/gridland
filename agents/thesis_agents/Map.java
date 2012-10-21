@@ -8,10 +8,12 @@ import org.grid.protocol.Position;
 public class Map {
 
 	HashMap<Position, Integer> map = new HashMap<Position, Integer>();
+	Position agentLocation = null;
+	int agentId;
 	
-	public Map()
+	public Map(int id)
 	{
-		
+		agentId = id;
 	}
 	
 	public void UpdateMap(StateMessage msg)
@@ -25,7 +27,8 @@ public class Map {
 		{
 			//if we already have elements in map do appropriate neighborhood shift
 			int xOffset = 0;
-			int yOffset = 0;
+			int yOffset = 0;			
+			
 			UpdateMapWithNeighborhood(msg.neighborhood, xOffset, yOffset);	
 		}
 		
@@ -37,7 +40,15 @@ public class Map {
 		{
 			for(int x = -n.getSize(); x <= n.getSize(); x++)
 			{
-				map.put(new Position(x + offsetX, y + offsetY), n.getCell(x, y));
+				int field = n.getCell(x, y);
+				Position pos = new Position(x + offsetX, y + offsetY);
+				
+				map.put(pos, field);
+				
+				if(field == agentId)
+				{
+					agentLocation = pos;
+				}
 			}
 		}
 	}
