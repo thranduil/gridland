@@ -64,9 +64,11 @@ public class DExplorer extends Agent{
 				while(states.peek() != null)
 				{
 					localMap.UpdateMap(states.poll());
+					localMap.PrintLocalMap();
 				}
 				
 				//compute next move
+				this.move(Direction.LEFT);
 				
 				//send message
 				
