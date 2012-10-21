@@ -26,6 +26,7 @@ import java.util.Vector;
 import org.grid.protocol.Message;
 import org.grid.protocol.Neighborhood;
 import org.grid.protocol.NewMessage;
+import org.grid.protocol.NewMessage.Direction;
 import org.grid.protocol.NewMessage.RegisterMessage;
 import org.grid.protocol.ProtocolSocket;
 
@@ -159,11 +160,10 @@ public class Dispatcher implements Runnable {
 						
 					NewMessage.MoveMessage xMessage = new NewMessage.MoveMessage(message);
 					
-					int currentStep = game.getStep();
 					game.move(team, agent.getId(), xMessage.getDirection());
 					
 					//wait with sending state until agent moves
-					while(game.getStep() == currentStep)
+					while(getAgent() != null && getAgent().isAlive() && getAgent().getDirection() != Direction.NONE)
 					{
 						try {
 							Thread.sleep(100);
@@ -174,7 +174,9 @@ public class Dispatcher implements Runnable {
 					
 					//after moving agent, if it is still alive, reply with current state
 					//TODO: check if client is alive in another way - this way may cause null pointer ex.
-					if(getAgent().isAlive())
+					Agent tempA = getAgent();
+					
+					if(getAgent() != null && getAgent().isAlive())
 					{
 						Neighborhood n = game.scanNeighborhood(neighborhoodSize, getAgent());
 						sendMessage(new NewMessage.StateMessage(getAgent().getDirection(), n, agent.hasFlag()).encodeMessage());
