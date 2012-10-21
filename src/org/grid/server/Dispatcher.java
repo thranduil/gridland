@@ -162,8 +162,10 @@ public class Dispatcher implements Runnable {
 					
 					game.move(team, agent.getId(), xMessage.getDirection());
 					
-					//wait with sending state until agent moves
-					while(getAgent() != null && getAgent().isAlive() && getAgent().getDirection() != Direction.NONE)
+					//wait with sending state until agent is moving
+					while(getAgent() != null 
+							&& getAgent().isAlive() 
+							&& getAgent().getDirection() != Direction.NONE)
 					{
 						try {
 							Thread.sleep(100);
@@ -172,10 +174,7 @@ public class Dispatcher implements Runnable {
 						}
 					}
 					
-					//after moving agent, if it is still alive, reply with current state
-					//TODO: check if client is alive in another way - this way may cause null pointer ex.
-					Agent tempA = getAgent();
-					
+					//after moving agent, if it is still alive, reply with current state					
 					if(getAgent() != null && getAgent().isAlive())
 					{
 						Neighborhood n = game.scanNeighborhood(neighborhoodSize, getAgent());
