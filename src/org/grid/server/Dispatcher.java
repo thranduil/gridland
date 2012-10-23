@@ -23,7 +23,6 @@ import java.net.Socket;
 import java.util.HashSet;
 import java.util.Vector;
 
-import org.grid.protocol.Message;
 import org.grid.protocol.Neighborhood;
 import org.grid.protocol.NewMessage;
 import org.grid.protocol.NewMessage.Direction;
@@ -133,6 +132,12 @@ public class Dispatcher implements Runnable {
 					scanMessages++;
 					
 					Neighborhood n = game.scanNeighborhood(neighborhoodSize, getAgent());
+					if(n == null)
+					{
+						System.err.println("Scanning neighborhood for agent " + getAgent() + " was unsuccessful. Retrying..");
+						n = game.scanNeighborhood(neighborhoodSize, getAgent());
+					}
+					
 					sendMessage(new NewMessage.StateMessage(getAgent().getDirection(), n, agent.hasFlag()).encodeMessage());
 					
 					return;

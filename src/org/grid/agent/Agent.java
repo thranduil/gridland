@@ -29,7 +29,6 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.grid.agent.sample.SampleAgent;
-import org.grid.protocol.Message;
 import org.grid.protocol.Neighborhood;
 import org.grid.protocol.NewMessage;
 import org.grid.protocol.NewMessage.Direction;

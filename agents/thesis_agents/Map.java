@@ -1,5 +1,7 @@
 package thesis_agents;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.grid.protocol.Neighborhood;
@@ -10,6 +12,9 @@ public class Map {
 	HashMap<Position, Integer> map = new HashMap<Position, Integer>();
 	Position agentLocation = null;
 	int agentId;
+	
+	//offsets : up, down, right, left
+	ArrayList<int[]> offsets = new ArrayList<int[]>(Arrays.asList(new int[]{0,-1}, new int[]{0,1}, new int[]{1,0}, new int[]{-1,0}));
 	
 	public Map(int id)
 	{
@@ -25,14 +30,62 @@ public class Map {
 		}
 		else
 		{
-			//if we already have elements in map do appropriate neighborhood shift
-			int xOffset = 0;
-			int yOffset = 0;			
+			//if we already have elements in map do appropriate neighborhood shift			
+			int offset[] = getOffset(msg.neighborhood);
 			
-			UpdateMapWithNeighborhood(msg.neighborhood, xOffset, yOffset);	
+			UpdateMapWithNeighborhood(msg.neighborhood, agentLocation.getX() + offset[0], agentLocation.getY() + offset[1]);	
 		}
 		
 	}
+	
+	private int[] getOffset(Neighborhood n)
+	{			
+		for(int[] offset : this.offsets)
+		{
+			boolean aligned = true;
+			
+			int xStart = (offset[0] == -1 ) ? -n.getSize() + 1 : -n.getSize();
+			int xEnd = (offset[0] == 1) ? n.getSize() - 1 : n.getSize();
+			int yStart = (offset[1] == -1 ) ? -n.getSize() + 1 : -n.getSize();
+			int yEnd = (offset[1] == 1) ? n.getSize() -1 : n.getSize();
+			
+			for(int y = yStart; y <= yEnd; y++)
+			{
+				for(int x = xStart; x <= xEnd; x++)
+				{
+					int current = n.getCell(x, y);
+					
+					//check only wall, empty space or hq
+					if(current == 0 || current == -1 || current == -2 || current == -4)
+					{
+						int local = map.get(new Position(x + agentLocation.getX() + offset[0], y + agentLocation.getY() + offset[1] ));
+						
+						//skip agents
+						if(local > 0) continue;
+						
+						if(current != local)
+						{
+							aligned = false;
+							break;
+						}
+					}
+				}
+				if(aligned == false)
+				{
+					break;
+				}
+			}
+			
+			if(aligned)
+			{
+				return offset;
+			}
+		}
+		
+		System.err.println("Offset can not be found.");
+		return new int[]{0,0};		
+	}
+	
 	
 	private void UpdateMapWithNeighborhood(Neighborhood n, int offsetX, int offsetY)
 	{
@@ -52,6 +105,7 @@ public class Map {
 			}
 		}
 	}
+	
 	
 	public void PrintLocalMap()
 	{
@@ -83,7 +137,12 @@ public class Map {
 		case -4: return "H";
 		case -5: return "F";
 		
-		default: return "Y";
+		default: 
+			if(title == this.agentId)
+			{
+				return "A";
+			}
+			return "Y";
 		}
 	}
 }
