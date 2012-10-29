@@ -6,6 +6,9 @@ import org.grid.agent.Agent;
 import org.grid.agent.Membership;
 import org.grid.protocol.Neighborhood;
 import org.grid.protocol.NewMessage.Direction;
+import org.grid.protocol.Position;
+
+import thesis_agents.Map.FindType;
 
 @Membership(team = "dExplorer", passphrase = "1")
 public class DExplorer extends Agent{
@@ -13,6 +16,12 @@ public class DExplorer extends Agent{
 	/* Private variables */
 	Map localMap;
 	ConcurrentLinkedQueue<StateMessage> states;
+	
+	private static enum Mode {
+		EXPLORE, HOMERUN, HITMAN, FOODHUNT
+	}
+	
+	Mode mode;
 	
 	
 	/* Overridden methods */
@@ -27,7 +36,7 @@ public class DExplorer extends Agent{
 	public void initialize() {
 		localMap = new Map(getId());
 		states = new ConcurrentLinkedQueue<StateMessage>();
-		
+		mode = Mode.EXPLORE;
 	}
 
 	@Override
@@ -68,6 +77,17 @@ public class DExplorer extends Agent{
 				}
 				
 				//compute next move
+				Position food = localMap.FindNearest(FindType.FOOD);
+				if(food != null)
+				{
+					changeMode(Mode.FOODHUNT);
+				}
+				else
+				{
+					Position loc = localMap.FindNearest(FindType.UNEXPLORED);
+				}
+				
+				
 				this.move(Direction.LEFT);
 				
 				//send message
@@ -79,5 +99,10 @@ public class DExplorer extends Agent{
 	}
 	
 	/* Private methods */
+	
+	private void changeMode(Mode m)
+	{
+		mode = m;
+	}
 
 }

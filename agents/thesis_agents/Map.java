@@ -5,16 +5,23 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import org.grid.protocol.Neighborhood;
+import org.grid.protocol.NewMessage.Direction;
 import org.grid.protocol.Position;
 
 public class Map {
 
 	HashMap<Position, Integer> map = new HashMap<Position, Integer>();
+	
 	Position agentLocation = null;
 	int agentId;
 	
 	//offsets : up, down, right, left
 	ArrayList<int[]> offsets = new ArrayList<int[]>(Arrays.asList(new int[]{0,-1}, new int[]{0,1}, new int[]{1,0}, new int[]{-1,0}));
+	
+	public static enum FindType { 
+		UNEXPLORED, FOOD, AGENT 
+	}
+	
 	
 	public Map(int id)
 	{
@@ -36,6 +43,87 @@ public class Map {
 			UpdateMapWithNeighborhood(msg.neighborhood, agentLocation.getX() + offset[0], agentLocation.getY() + offset[1]);	
 		}
 		
+	}
+	
+	public void PrintLocalMap()
+	{
+		for(int y = -10; y <= 10; y++)
+		{
+			for(int x = -10; x <= 10; x++)
+			{ 
+				Position pos = new Position(x, y);
+				int a = 1;
+				if(map.containsKey(pos))
+				{
+					a = map.get(pos);
+				}
+				
+				System.out.print(GetTitle(a) + " ");
+			}
+			System.out.println();
+		}
+	}
+
+	public Direction GetNextMove()
+	{
+		//check for proximity of other agent and move accordingly
+		
+		return Direction.NONE;
+	}
+	
+	public Position FindNearest(FindType type)
+	{
+		Position nearest = null;
+		
+		for(Position p : map.keySet())
+		{
+			int field = map.get(p);
+			boolean satisfyCondition = false;
+			
+			switch(type)
+			{
+				case UNEXPLORED:
+				{
+					//field must be empty and one of the neighbors must not exist
+					if(field == 0 && ( !map.containsKey(new Position(p.getX() + 1, p.getY()))
+									|| !map.containsKey(new Position(p.getX() - 1, p.getY()))
+									|| !map.containsKey(new Position(p.getX(), p.getY() + 1))
+									|| !map.containsKey(new Position(p.getX(), p.getY() - 1))))
+					{
+						satisfyCondition = true;
+					}
+					break;
+				}
+				case FOOD:
+				{
+					if(field == -3 || field == -5)
+					{
+						satisfyCondition = true;
+					}
+					break;
+				}
+				case AGENT:
+					break;
+				default:
+					break;
+			}
+			
+			//check if current position is nearest
+			if(satisfyCondition)
+			{
+				if(nearest == null || GetDistanceFromAgent(p) < GetDistanceFromAgent(nearest))
+				{
+					nearest = p;
+				}
+			}
+		}
+		
+		return nearest;
+	}
+	
+	private double GetDistanceFromAgent(Position p)
+	{		
+		return Math.sqrt(Math.pow(agentLocation.getX() - p.getX(),2)) + Math.sqrt(Math.pow(agentLocation.getY() - p.getY(), 2));
 	}
 	
 	private int[] getOffset(Neighborhood n)
@@ -86,7 +174,6 @@ public class Map {
 		return new int[]{0,0};		
 	}
 	
-	
 	private void UpdateMapWithNeighborhood(Neighborhood n, int offsetX, int offsetY)
 	{
 		for(int y = -n.getSize(); y <= n.getSize(); y++)
@@ -105,27 +192,7 @@ public class Map {
 			}
 		}
 	}
-	
-	
-	public void PrintLocalMap()
-	{
-		for(int y = -10; y <= 10; y++)
-		{
-			for(int x = -10; x <= 10; x++)
-			{ 
-				Position pos = new Position(x, y);
-				int a = 1;
-				if(map.containsKey(pos))
-				{
-					a = map.get(pos);
-				}
-				
-				System.out.print(GetTitle(a) + " ");
-			}
-			System.out.println();
-		}
-	}
-	
+		
 	private String GetTitle(int title)
 	{
 		switch(title)
@@ -145,4 +212,5 @@ public class Map {
 			return "Y";
 		}
 	}
+
 }

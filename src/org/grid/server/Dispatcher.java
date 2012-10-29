@@ -132,9 +132,9 @@ public class Dispatcher implements Runnable {
 					scanMessages++;
 					
 					Neighborhood n = game.scanNeighborhood(neighborhoodSize, getAgent());
-					if(n == null)
+					while(n == null)
 					{
-						System.err.println("Scanning neighborhood for agent " + getAgent() + " was unsuccessful. Retrying..");
+						System.err.println("Scanning neighborhood for agent " + getAgent().getId() + " was unsuccessful. Retrying..");
 						n = game.scanNeighborhood(neighborhoodSize, getAgent());
 					}
 					
