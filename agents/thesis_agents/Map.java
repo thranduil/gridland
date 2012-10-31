@@ -2,11 +2,16 @@ package thesis_agents;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.PriorityQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.grid.protocol.Neighborhood;
 import org.grid.protocol.NewMessage.Direction;
 import org.grid.protocol.Position;
+
+import agents.LocalMap;
 
 public class Map {
 
@@ -28,7 +33,7 @@ public class Map {
 		agentId = id;
 	}
 	
-	public void UpdateMap(StateMessage msg)
+	public void updateMap(StateMessage msg)
 	{		
 		if(map.size() == 0)
 		{
@@ -45,7 +50,7 @@ public class Map {
 		
 	}
 	
-	public void PrintLocalMap()
+	public void printLocalMap()
 	{
 		for(int y = -10; y <= 10; y++)
 		{
@@ -58,20 +63,13 @@ public class Map {
 					a = map.get(pos);
 				}
 				
-				System.out.print(GetTitle(a) + " ");
+				System.out.print(getTitle(a) + " ");
 			}
 			System.out.println();
 		}
 	}
-
-	public Direction GetNextMove()
-	{
-		//check for proximity of other agent and move accordingly
-		
-		return Direction.NONE;
-	}
 	
-	public Position FindNearest(FindType type)
+	public Position findNearest(FindType type)
 	{
 		Position nearest = null;
 		
@@ -103,8 +101,7 @@ public class Map {
 					break;
 				}
 				case AGENT:
-					break;
-				default:
+					//TODO: implement this
 					break;
 			}
 			
@@ -121,9 +118,117 @@ public class Map {
 		return nearest;
 	}
 	
+	public boolean canSafelyMove(Direction nextMove) {
+		Position n = null;
+		switch(nextMove)
+		{
+			case LEFT:
+			{
+				n = new Position(agentLocation.getX() - 1, agentLocation.getY());
+				if(!map.containsKey(n))
+				{
+					return true;
+				}
+				
+				Integer a = map.get(new Position(n.getX() - 1, n.getY()));
+				Integer b = map.get(new Position(n.getX(), n.getY() - 1));
+				Integer c = map.get(new Position(n.getX(), n.getY() + 1));
+				
+				//do not move there if on that spot can move enemy agent
+				if( (a != null && a <= -6)
+					|| (b != null && b <= -6)
+					|| (c != null && c <= -6))
+				{
+					return false;
+				}
+				break;
+			}
+			case DOWN:
+			{
+				n = new Position(agentLocation.getX(), agentLocation.getY() + 1);
+				if(!map.containsKey(n))
+				{
+					return true;
+				}
+				
+				Integer a = map.get(new Position(n.getX(), n.getY() + 1));
+				Integer b = map.get(new Position(n.getX() + 1, n.getY()));
+				Integer c = map.get(new Position(n.getX() - 1, n.getY()));
+				
+				//do not move there if on that spot can move enemy agent
+				if( (a != null && a <= -6)
+						|| (b != null && b <= -6)
+						|| (c != null && c <= -6))
+				{
+					return false;
+				}
+				
+				break;
+			}
+			case RIGHT:
+			{
+				n = new Position(agentLocation.getX() + 1, agentLocation.getY());
+				if(!map.containsKey(n))
+				{
+					return true;
+				}
+				
+				Integer a = map.get(new Position(n.getX() + 1, n.getY()));
+				Integer b = map.get(new Position(n.getX(), n.getY() - 1));
+				Integer c = map.get(new Position(n.getX(), n.getY() + 1));
+				
+				//do not move there if on that spot can move enemy agent
+				if( (a != null && a <= -6)
+						|| (b != null && b <= -6)
+						|| (c != null && c <= -6))
+				{
+					return false;
+				}
+				
+				break;
+			}
+			case UP:
+			{
+				n = new Position(agentLocation.getX(), agentLocation.getY() - 1);
+				if(!map.containsKey(n))
+				{
+					return true;
+				}
+				
+				Integer a = map.get(new Position(n.getX(), n.getY() - 1));
+				Integer b = map.get(new Position(n.getX() + 1, n.getY()));
+				Integer c = map.get(new Position(n.getX() - 1, n.getY()));
+				
+				//do not move there if on that spot can move enemy agent
+				if( (a != null && a <= -6)
+						|| (b != null && b <= -6)
+						|| (c != null && c <= -6))
+				{
+					return false;
+				}
+				
+				break;
+			}
+			case NONE:
+			{
+				return true;
+			}
+		}
+		
+		int title = map.get(n);
+		
+		//do not move if there is wall, enemy hq or other agent
+		if(title == -1 || title == -4 || title <= -6 || title > 0)
+		{
+			return false;
+		}
+		
+		return true;
+	}
+	
 	private double GetDistanceFromAgent(Position p)
 	{		
-		return Math.sqrt(Math.pow(agentLocation.getX() - p.getX(),2)) + Math.sqrt(Math.pow(agentLocation.getY() - p.getY(), 2));
+		return Math.abs(agentLocation.getX() - p.getX()) + Math.abs(agentLocation.getY() - p.getY());
 	}
 	
 	private int[] getOffset(Neighborhood n)
@@ -193,7 +298,36 @@ public class Map {
 		}
 	}
 		
-	private String GetTitle(int title)
+	public ConcurrentLinkedQueue<Direction> dijkstraPlan(Position nextTarget) {
+		if(nextTarget == null)
+		{
+			return null;
+		}
+		
+		Comparator<GraphNode> comp = new GraphNodeComparator();
+		
+		HashMap<Position, Position> previous = new HashMap<Position, Position>();
+		PriorityQueue<GraphNode> distances = new PriorityQueue<GraphNode>(map.size(), comp);
+		
+		//add all map fields to priorityQueue with distance set to max
+		for(Position p : map.keySet())
+		{
+			if(p == agentLocation)
+			{
+				distances.add(new GraphNode(p, 0));
+				continue;
+			}
+			
+			distances.add(new GraphNode(p, Integer.MAX_VALUE));
+		}
+		
+		
+		
+		
+		return null;
+	}
+	
+	private String getTitle(int title)
 	{
 		switch(title)
 		{
@@ -207,10 +341,51 @@ public class Map {
 		default: 
 			if(title == this.agentId)
 			{
+				//that's me!
 				return "A";
+			}
+			if(title > 1)
+			{
+				//friendly agent
+				return "a";
+			}
+			if(title < 0)
+			{
+				//enemy agent
+				return "E";
 			}
 			return "Y";
 		}
 	}
 
+
+	public class GraphNodeComparator implements Comparator<GraphNode>
+	{
+	    @Override
+	    public int compare(GraphNode x, GraphNode y)
+	    {
+	        if(x == null)
+	        {
+	        	return -1;
+	        }
+	        
+	        if(y == null)
+	        {
+	        	return 1;
+	        }
+	        
+	        if(x.getDistance() < y.getDistance())
+	        {
+	        	return -1;
+	        }
+	        else if(x.getDistance() > y.getDistance())
+	        {
+	        	return 1;
+	        }
+
+	        return 0;
+	    }
+	}
 }
+
+

@@ -13,16 +13,17 @@ import thesis_agents.Map.FindType;
 @Membership(team = "dExplorer", passphrase = "1")
 public class DExplorer extends Agent{
 
-	/* Private variables */
-	Map localMap;
-	ConcurrentLinkedQueue<StateMessage> states;
-	
 	private static enum Mode {
 		EXPLORE, HOMERUN, HITMAN, FOODHUNT
 	}
 	
-	Mode mode;
+	/* Private variables */
+	Map localMap;
 	
+	private ConcurrentLinkedQueue<StateMessage> states;
+	private ConcurrentLinkedQueue<Direction> plan;
+	
+	Mode mode;
 	
 	/* Overridden methods */
 	
@@ -36,6 +37,7 @@ public class DExplorer extends Agent{
 	public void initialize() {
 		localMap = new Map(getId());
 		states = new ConcurrentLinkedQueue<StateMessage>();
+		plan = new ConcurrentLinkedQueue<Direction>();
 		mode = Mode.EXPLORE;
 	}
 
@@ -63,6 +65,7 @@ public class DExplorer extends Agent{
 		//first trigger scan request, so that we get initial state
 		scan(0);
 		
+		Position nextTarget = null;
 		while(isAlive())
 		{
 			//process state if there is any
@@ -72,23 +75,83 @@ public class DExplorer extends Agent{
 				//update local map with all received states
 				while(states.peek() != null)
 				{
-					localMap.UpdateMap(states.poll());
-					localMap.PrintLocalMap();
+					localMap.updateMap(states.poll());
+					localMap.printLocalMap();
 				}
 				
-				//compute next move
-				Position food = localMap.FindNearest(FindType.FOOD);
-				if(food != null)
+				//finding next target field based on agent mode
+				switch(mode)
 				{
-					changeMode(Mode.FOODHUNT);
+					case EXPLORE:
+					{
+						nextTarget = localMap.findNearest(FindType.FOOD);
+						if(nextTarget != null)
+						{
+							changeMode(Mode.FOODHUNT);
+						}
+						else
+						{
+							nextTarget = localMap.findNearest(FindType.UNEXPLORED);
+							
+							//No flags and no unexplored places found
+							if(nextTarget == null)
+							{
+								changeMode(Mode.HITMAN);
+							}
+						}
+						
+						break;
+					}
+					case FOODHUNT:
+					{
+						
+						break;
+					}
+					case HITMAN:
+						break;
+					case HOMERUN:
+						break;
+					default:
+						break;
 				}
-				else
+				
+				//compute next move based on nextTarget
+				
+				/*
+				if(plan.isEmpty())
 				{
-					Position loc = localMap.FindNearest(FindType.UNEXPLORED);
+					//plan path to nextTarget
 				}
 				
+				Direction nextMove = plan.poll();
 				
-				this.move(Direction.LEFT);
+				if(localMap.CanSafelyMove(nextMove))
+				{
+					this.move(nextMove);
+				}
+				*/
+				
+				plan = localMap.dijkstraPlan(nextTarget);
+				
+				if(localMap.canSafelyMove(Direction.LEFT))
+				{
+					this.move(Direction.LEFT);
+				}
+				else if(localMap.canSafelyMove(Direction.UP))
+				{
+					this.move(Direction.UP);
+				}
+				else if(localMap.canSafelyMove(Direction.RIGHT))
+				{
+					this.move(Direction.RIGHT);
+				}
+				else if(localMap.canSafelyMove(Direction.DOWN))
+				{
+					this.move(Direction.DOWN);
+				}
+
+
+				
 				
 				//send message
 				
@@ -102,6 +165,7 @@ public class DExplorer extends Agent{
 	
 	private void changeMode(Mode m)
 	{
+		System.out.println("Changing mode to " + m.toString());
 		mode = m;
 	}
 
