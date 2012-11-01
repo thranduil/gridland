@@ -122,36 +122,23 @@ public class DExplorer extends Agent{
 				{
 					//plan path to nextTarget
 				}
+				*/
+				
+				//TODO: perform planning on other thread and here wait
+				//for specific limit and use old plan if computing takes too long
+				
+				plan = localMap.dijkstraPlan(nextTarget);
+				if(plan == null)
+				{
+					continue;
+				}
 				
 				Direction nextMove = plan.poll();
 				
-				if(localMap.CanSafelyMove(nextMove))
+				if(localMap.canSafelyMove(nextMove))
 				{
 					this.move(nextMove);
-				}
-				*/
-				
-				plan = localMap.dijkstraPlan(nextTarget);
-				
-				if(localMap.canSafelyMove(Direction.LEFT))
-				{
-					this.move(Direction.LEFT);
-				}
-				else if(localMap.canSafelyMove(Direction.UP))
-				{
-					this.move(Direction.UP);
-				}
-				else if(localMap.canSafelyMove(Direction.RIGHT))
-				{
-					this.move(Direction.RIGHT);
-				}
-				else if(localMap.canSafelyMove(Direction.DOWN))
-				{
-					this.move(Direction.DOWN);
-				}
-
-
-				
+				}			
 				
 				//send message
 				

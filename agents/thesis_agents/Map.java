@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.grid.protocol.Neighborhood;
@@ -304,27 +305,145 @@ public class Map {
 			return null;
 		}
 		
-		Comparator<GraphNode> comp = new GraphNodeComparator();
-		
 		HashMap<Position, Position> previous = new HashMap<Position, Position>();
-		PriorityQueue<GraphNode> distances = new PriorityQueue<GraphNode>(map.size(), comp);
+		HashMap<Position, Integer> distances = new HashMap<Position, Integer>();
+		
 		
 		//add all map fields to priorityQueue with distance set to max
 		for(Position p : map.keySet())
 		{
 			if(p == agentLocation)
 			{
-				distances.add(new GraphNode(p, 0));
+				distances.put(p, 0);
+				previous.put(p, null);
 				continue;
 			}
 			
-			distances.add(new GraphNode(p, Integer.MAX_VALUE));
+			distances.put(p, Integer.MAX_VALUE);
 		}
 		
-		
-		
+		while(!distances.isEmpty())
+		{
+			Position node = getSmallestDistance(distances);
+			
+			//if node has max possible distance, all next has it
+			//there is no solution 
+			if(distances.get(node) == Integer.MAX_VALUE)
+			{
+				break;
+			}
+			
+			if(node == nextTarget)
+			{
+				//we found finish node
+				ConcurrentLinkedQueue<Direction> resultPath = new ConcurrentLinkedQueue<Direction>();
+				while(previous.get(node) != null)
+				{
+					resultPath.add(getDirectionFrom(previous.get(node), node));
+					node = previous.get(node);
+				}
+				return resultPath;
+			}
+			
+			//check all neighbor fields
+			Position leftField = new Position(node.getX() - 1, node.getY());
+			Position rightField = new Position(node.getX() + 1, node.getY());
+			Position upperField = new Position(node.getX(), node.getY() - 1);
+			Position downField = new Position(node.getX(), node.getY() + 1);
+			
+			if(canMove(leftField))
+			{
+				int newDistance = distances.get(node) + 1;
+				if(newDistance < distances.get(leftField))
+				{
+					previous.put(leftField, node);			
+					distances.put(leftField, newDistance);
+				}
+			}
+			
+			if(canMove(rightField))
+			{
+				int newDistance = distances.get(node) + 1;
+				if(newDistance < distances.get(rightField))
+				{
+					previous.put(rightField, node);			
+					distances.put(rightField, newDistance);
+				}
+			}
+			
+			if(canMove(upperField))
+			{
+				int newDistance = distances.get(node) + 1;
+				if(newDistance < distances.get(upperField))
+				{
+					previous.put(upperField, node);			
+					distances.put(upperField, newDistance);
+				}
+			}
+			
+			if(canMove(downField))
+			{
+				int newDistance = distances.get(node) + 1;
+				if(newDistance < distances.get(downField))
+				{
+					previous.put(downField, node);			
+					distances.put(downField, newDistance);
+				}
+			}
+			
+			//remove distance for current node, as it is no longer needed
+			distances.remove(node);
+		}
 		
 		return null;
+	}
+	
+	private Direction getDirectionFrom(Position from, Position to) {
+		if(from.getX() + 1 == to.getX())
+		{
+			return Direction.LEFT;
+		}
+		if(from.getX() - 1 == to.getX())
+		{
+			return Direction.RIGHT;
+		}
+		if(from.getY() + 1 == to.getY())
+		{
+			return Direction.DOWN;
+		}
+		if(from.getY() - 1 == to.getY())
+		{
+			return Direction.UP;
+		}
+		
+		System.err.println("Could not find direction from ("+from.getX()+","+from.getY()+") to ("+to.getX()+","+to.getY()+").");
+		return Direction.NONE;
+	}
+
+	private Position getSmallestDistance(HashMap<Position, Integer> distances)
+	{
+		int distance = Integer.MAX_VALUE;
+		Position result = null;
+		
+		for(Position p : distances.keySet())
+		{
+			if(distances.get(p) < distance)
+			{
+				distance = distances.get(p);
+				result = p;
+			}
+		}
+		
+		return result;
+	}
+	
+	private boolean canMove(Position p)
+	{
+		if(map.containsKey(p) && map.get(p) != -1 && map.get(p) != -4)
+		{
+			return true;
+		}
+		return false;
 	}
 	
 	private String getTitle(int title)
@@ -356,35 +475,6 @@ public class Map {
 			}
 			return "Y";
 		}
-	}
-
-
-	public class GraphNodeComparator implements Comparator<GraphNode>
-	{
-	    @Override
-	    public int compare(GraphNode x, GraphNode y)
-	    {
-	        if(x == null)
-	        {
-	        	return -1;
-	        }
-	        
-	        if(y == null)
-	        {
-	        	return 1;
-	        }
-	        
-	        if(x.getDistance() < y.getDistance())
-	        {
-	        	return -1;
-	        }
-	        else if(x.getDistance() > y.getDistance())
-	        {
-	        	return 1;
-	        }
-
-	        return 0;
-	    }
 	}
 }
 
