@@ -20,6 +20,7 @@ public class Map {
 	HashMap<Position, Integer> map = new HashMap<Position, Integer>();
 	
 	Position agentLocation = null;
+	Direction lastMove = Direction.NONE;
 	int agentId;
 	
 	//offsets : up, down, right, left
@@ -54,9 +55,9 @@ public class Map {
 	
 	public void printLocalMap()
 	{
-		for(int y = -10; y <= 10; y++)
+		for(int y = -17; y <= 17; y++)
 		{
-			for(int x = -10; x <= 10; x++)
+			for(int x = -17; x <= 17; x++)
 			{ 
 				Position pos = new Position(x, y);
 				int a = 1;
@@ -143,9 +144,9 @@ public class Map {
 				Integer c = map.get(new Position(n.getX(), n.getY() + 1));
 				
 				//do not move there if on that spot can move enemy agent
-				if( (a != null && a <= -6)
-					|| (b != null && b <= -6)
-					|| (c != null && c <= -6))
+				if( (a != null && (a <= -6 || a > 0))
+					|| (b != null && (b <= -6 || b > 0))
+					|| (c != null && (c <= -6 || c > 0)))
 				{
 					return false;
 				}
@@ -164,9 +165,9 @@ public class Map {
 				Integer c = map.get(new Position(n.getX() - 1, n.getY()));
 				
 				//do not move there if on that spot can move enemy agent
-				if( (a != null && a <= -6)
-						|| (b != null && b <= -6)
-						|| (c != null && c <= -6))
+				if( (a != null && (a <= -6 || a > 0))
+						|| (b != null && (b <= -6 || b > 0))
+						|| (c != null && (c <= -6 || c > 0)))
 				{
 					return false;
 				}
@@ -186,9 +187,9 @@ public class Map {
 				Integer c = map.get(new Position(n.getX(), n.getY() + 1));
 				
 				//do not move there if on that spot can move enemy agent
-				if( (a != null && a <= -6)
-						|| (b != null && b <= -6)
-						|| (c != null && c <= -6))
+				if( (a != null && (a <= -6 || a > 0))
+						|| (b != null && (b <= -6 || b > 0))
+						|| (c != null && (c <= -6 || c > 0)))
 				{
 					return false;
 				}
@@ -208,9 +209,9 @@ public class Map {
 				Integer c = map.get(new Position(n.getX() - 1, n.getY()));
 				
 				//do not move there if on that spot can move enemy agent
-				if( (a != null && a <= -6)
-						|| (b != null && b <= -6)
-						|| (c != null && c <= -6))
+				if( (a != null && (a <= -6 || a > 0))
+						|| (b != null && (b <= -6 || b > 0))
+						|| (c != null && (c <= -6 || c > 0)))
 				{
 					return false;
 				}
@@ -240,47 +241,65 @@ public class Map {
 	}
 	
 	private int[] getOffset(Neighborhood n)
-	{			
-		for(int[] offset : this.offsets)
+	{	
+		int[] offset = null;
+		
+		switch(lastMove)
 		{
-			boolean aligned = true;
-			
-			int xStart = (offset[0] == -1 ) ? -n.getSize() + 1 : -n.getSize();
-			int xEnd = (offset[0] == 1) ? n.getSize() - 1 : n.getSize();
-			int yStart = (offset[1] == -1 ) ? -n.getSize() + 1 : -n.getSize();
-			int yEnd = (offset[1] == 1) ? n.getSize() -1 : n.getSize();
-			
-			for(int y = yStart; y <= yEnd; y++)
+			case UP:
+				offset = new int[]{0,-1};
+				break;
+			case DOWN:
+				offset = new int[]{0,1};
+				break;
+			case NONE:
+				offset = new int[]{0,0};
+				break;
+			case LEFT:
+				offset = new int[]{-1,0};
+				break;
+			case RIGHT:
+				offset = new int[]{1,0};
+				break;
+		}
+		
+		boolean aligned = true;
+		
+		int xStart = (offset[0] == -1 ) ? -n.getSize() + 1 : -n.getSize();
+		int xEnd = (offset[0] == 1) ? n.getSize() - 1 : n.getSize();
+		int yStart = (offset[1] == -1 ) ? -n.getSize() + 1 : -n.getSize();
+		int yEnd = (offset[1] == 1) ? n.getSize() -1 : n.getSize();
+		
+		for(int y = yStart; y <= yEnd; y++)
+		{
+			for(int x = xStart; x <= xEnd; x++)
 			{
-				for(int x = xStart; x <= xEnd; x++)
+				int current = n.getCell(x, y);
+				
+				//check only wall, empty space or hq
+				if(current == 0 || current == -1 || current == -2 || current == -4)
 				{
-					int current = n.getCell(x, y);
+					int local = map.get(new Position(x + agentLocation.getX() + offset[0], y + agentLocation.getY() + offset[1] ));
 					
-					//check only wall, empty space or hq
-					if(current == 0 || current == -1 || current == -2 || current == -4)
+					//skip agents
+					if(local > 0) continue;
+					
+					if(current != local)
 					{
-						int local = map.get(new Position(x + agentLocation.getX() + offset[0], y + agentLocation.getY() + offset[1] ));
-						
-						//skip agents
-						if(local > 0) continue;
-						
-						if(current != local)
-						{
-							aligned = false;
-							break;
-						}
+						aligned = false;
+						break;
 					}
 				}
-				if(aligned == false)
-				{
-					break;
-				}
 			}
-			
-			if(aligned)
+			if(aligned == false)
 			{
-				return offset;
+				break;
 			}
+		}
+		
+		if(aligned)
+		{
+			return offset;
 		}
 		
 		System.err.println("Offset can not be found.");
@@ -307,14 +326,23 @@ public class Map {
 	}
 		
 	public LinkedList<Direction> dijkstraPlan(Position nextTarget) {
-		if(nextTarget == null)
-		{
-			return null;
-		}
 		
 		HashMap<Position, Position> previous = new HashMap<Position, Position>();
 		HashMap<Position, Integer> distances = new HashMap<Position, Integer>();
+		LinkedList<Direction> resultPath = new LinkedList<Direction>();
 		
+		if(nextTarget == null)
+		{
+			lastMove = Direction.NONE;
+			return resultPath;
+		}
+		
+		//find out if target field is HQ 
+		boolean returnToHQ = false;
+		if(map.get(nextTarget) == -2)
+		{
+			returnToHQ = true;
+		}
 		
 		//add all map fields to priorityQueue with distance set to max
 		for(Position p : map.keySet())
@@ -332,25 +360,27 @@ public class Map {
 		while(!distances.isEmpty())
 		{
 			Position node = getSmallestDistance(distances);
-			int nodeDistance = distances.get(node);
-			//remove distance for current node, as it is no longer needed
-			distances.remove(node);
+			
 			//if node has max possible distance, all next has it
 			//there is no solution 
-			if(nodeDistance == Integer.MAX_VALUE)
+			if(node == null || distances.get(node) == Integer.MAX_VALUE)
 			{
 				break;
 			}
 			
+			int nodeDistance = distances.get(node);
+			//remove distance for current node, as it is no longer needed
+			distances.remove(node);
+			
 			if(node.equals(nextTarget))
 			{
 				//we found finish node
-				LinkedList<Direction> resultPath = new LinkedList<Direction>();
 				while(previous.get(node) != null)
 				{
 					resultPath.addFirst(getDirectionFrom(previous.get(node), node));
 					node = previous.get(node);
 				}
+				lastMove = resultPath.peekFirst();
 				return resultPath;
 			}
 			
@@ -362,7 +392,7 @@ public class Map {
 			
 			int newDistance = nodeDistance + 1;
 			
-			if(canMove(leftField) && distances.containsKey(leftField))
+			if(canMove(leftField, returnToHQ) && distances.containsKey(leftField))
 			{
 				if(newDistance < distances.get(leftField))
 				{
@@ -371,7 +401,7 @@ public class Map {
 				}
 			}
 			
-			if(canMove(rightField) && distances.containsKey(rightField))
+			if(canMove(rightField, returnToHQ) && distances.containsKey(rightField))
 			{
 				if(newDistance < distances.get(rightField))
 				{
@@ -380,7 +410,7 @@ public class Map {
 				}
 			}
 			
-			if(canMove(upperField) && distances.containsKey(upperField))
+			if(canMove(upperField, returnToHQ) && distances.containsKey(upperField))
 			{
 				if(newDistance < distances.get(upperField))
 				{
@@ -389,7 +419,7 @@ public class Map {
 				}
 			}
 			
-			if(canMove(downField) && distances.containsKey(downField))
+			if(canMove(downField, returnToHQ) && distances.containsKey(downField))
 			{
 				if(newDistance < distances.get(downField))
 				{
@@ -399,7 +429,8 @@ public class Map {
 			}
 		}
 		System.err.println("Path to (" + nextTarget.getX() + "," + nextTarget.getY() + ") was not found");
-		return null;
+		lastMove = Direction.NONE;
+		return resultPath;
 	}
 	
 	private Direction getDirectionFrom(Position from, Position to) {
@@ -441,9 +472,9 @@ public class Map {
 		return result;
 	}
 	
-	private boolean canMove(Position p)
+	private boolean canMove(Position p, boolean includeHQ)
 	{
-		if(map.containsKey(p) && map.get(p) != -1 && map.get(p) != -4)
+		if(map.containsKey(p) && (map.get(p) == 0 || map.get(p) == -3 || map.get(p) == -5 || (map.get(p) == -2 && includeHQ)))
 		{
 			return true;
 		}

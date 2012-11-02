@@ -518,7 +518,6 @@ public class Game {
 						continue;
 					}
 
-					//TODO: chenge here to send friendly flag if gamemode is benchmark
 					if (c.getBody() instanceof Flag) {
 						n.setCell(i, j,
 								t == agent.getTeam() ? Neighborhood.FLAG

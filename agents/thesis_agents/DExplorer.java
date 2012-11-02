@@ -88,6 +88,7 @@ public class DExplorer extends Agent{
 				//finding next target field based on agent mode
 				switch(mode)
 				{
+					case FOODHUNT:
 					case EXPLORE:
 					{
 						nextTarget = localMap.findNearest(FindType.FOOD);
@@ -108,11 +109,6 @@ public class DExplorer extends Agent{
 						
 						break;
 					}
-					case FOODHUNT:
-					{
-						//TODO: check if any flag is nearer than current Target
-						break;
-					}
 					case HITMAN:
 						break;
 					case HOMERUN:
@@ -130,23 +126,27 @@ public class DExplorer extends Agent{
 				plan = new ConcurrentLinkedQueue<Direction>(localMap.dijkstraPlan(nextTarget));
 				if(plan == null || plan.size() == 0)
 				{
+					this.move(Direction.NONE);
 					continue;
-				}
-				
-				Direction nextMove = plan.poll();
-				
-				if(localMap.canSafelyMove(nextMove))
-				{
-					this.move(nextMove);
 				}
 				else
 				{
-					this.move(Direction.NONE);
+					Direction nextMove = plan.poll();
+					
+					if(localMap.canSafelyMove(nextMove))
+					{
+						this.move(nextMove);
+					}
+					else
+					{
+						if(Math.random() < 0.2)
+							this.move(nextMove);
+						else
+							this.move(Direction.NONE);
+					}
+					
+					//send message
 				}
-				
-				//send message
-				
-				//move
 			}
 		}
 		
