@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -299,7 +300,7 @@ public class Map {
 		}
 	}
 		
-	public ConcurrentLinkedQueue<Direction> dijkstraPlan(Position nextTarget) {
+	public LinkedList<Direction> dijkstraPlan(Position nextTarget) {
 		if(nextTarget == null)
 		{
 			return null;
@@ -312,7 +313,7 @@ public class Map {
 		//add all map fields to priorityQueue with distance set to max
 		for(Position p : map.keySet())
 		{
-			if(p == agentLocation)
+			if(p.equals(agentLocation))
 			{
 				distances.put(p, 0);
 				previous.put(p, null);
@@ -325,21 +326,23 @@ public class Map {
 		while(!distances.isEmpty())
 		{
 			Position node = getSmallestDistance(distances);
-			
+			int nodeDistance = distances.get(node);
+			//remove distance for current node, as it is no longer needed
+			distances.remove(node);
 			//if node has max possible distance, all next has it
 			//there is no solution 
-			if(distances.get(node) == Integer.MAX_VALUE)
+			if(nodeDistance == Integer.MAX_VALUE)
 			{
 				break;
 			}
 			
-			if(node == nextTarget)
+			if(node.equals(nextTarget))
 			{
 				//we found finish node
-				ConcurrentLinkedQueue<Direction> resultPath = new ConcurrentLinkedQueue<Direction>();
+				LinkedList<Direction> resultPath = new LinkedList<Direction>();
 				while(previous.get(node) != null)
 				{
-					resultPath.add(getDirectionFrom(previous.get(node), node));
+					resultPath.addFirst(getDirectionFrom(previous.get(node), node));
 					node = previous.get(node);
 				}
 				return resultPath;
@@ -351,9 +354,10 @@ public class Map {
 			Position upperField = new Position(node.getX(), node.getY() - 1);
 			Position downField = new Position(node.getX(), node.getY() + 1);
 			
-			if(canMove(leftField))
+			int newDistance = nodeDistance + 1;
+			
+			if(canMove(leftField) && distances.containsKey(leftField))
 			{
-				int newDistance = distances.get(node) + 1;
 				if(newDistance < distances.get(leftField))
 				{
 					previous.put(leftField, node);			
@@ -361,9 +365,8 @@ public class Map {
 				}
 			}
 			
-			if(canMove(rightField))
+			if(canMove(rightField) && distances.containsKey(rightField))
 			{
-				int newDistance = distances.get(node) + 1;
 				if(newDistance < distances.get(rightField))
 				{
 					previous.put(rightField, node);			
@@ -371,9 +374,8 @@ public class Map {
 				}
 			}
 			
-			if(canMove(upperField))
+			if(canMove(upperField) && distances.containsKey(upperField))
 			{
-				int newDistance = distances.get(node) + 1;
 				if(newDistance < distances.get(upperField))
 				{
 					previous.put(upperField, node);			
@@ -381,31 +383,27 @@ public class Map {
 				}
 			}
 			
-			if(canMove(downField))
+			if(canMove(downField) && distances.containsKey(downField))
 			{
-				int newDistance = distances.get(node) + 1;
 				if(newDistance < distances.get(downField))
 				{
 					previous.put(downField, node);			
 					distances.put(downField, newDistance);
 				}
 			}
-			
-			//remove distance for current node, as it is no longer needed
-			distances.remove(node);
 		}
-		
+		System.err.println("Path to (" + nextTarget.getX() + "," + nextTarget.getY() + ") was not found");
 		return null;
 	}
 	
 	private Direction getDirectionFrom(Position from, Position to) {
 		if(from.getX() + 1 == to.getX())
 		{
-			return Direction.LEFT;
+			return Direction.RIGHT;
 		}
 		if(from.getX() - 1 == to.getX())
 		{
-			return Direction.RIGHT;
+			return Direction.LEFT;
 		}
 		if(from.getY() + 1 == to.getY())
 		{

@@ -53,7 +53,7 @@ public class ProtocolSocket {
 
 	private boolean running = true;
 
-	private boolean debug = true;
+	private boolean debug = false;
 
 	private ConcurrentLinkedQueue<String> inQueue = new ConcurrentLinkedQueue<String>();
 

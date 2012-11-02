@@ -126,9 +126,9 @@ public class DExplorer extends Agent{
 				
 				//TODO: perform planning on other thread and here wait
 				//for specific limit and use old plan if computing takes too long
-				
-				plan = localMap.dijkstraPlan(nextTarget);
-				if(plan == null)
+				System.out.println("Target:" + nextTarget);
+				plan = new ConcurrentLinkedQueue<Direction>(localMap.dijkstraPlan(nextTarget));
+				if(plan == null || plan.size() == 0)
 				{
 					continue;
 				}
@@ -138,7 +138,11 @@ public class DExplorer extends Agent{
 				if(localMap.canSafelyMove(nextMove))
 				{
 					this.move(nextMove);
-				}			
+				}
+				else
+				{
+					this.move(Direction.NONE);
+				}
 				
 				//send message
 				
