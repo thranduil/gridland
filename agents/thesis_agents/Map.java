@@ -26,7 +26,7 @@ public class Map {
 	ArrayList<int[]> offsets = new ArrayList<int[]>(Arrays.asList(new int[]{0,-1}, new int[]{0,1}, new int[]{1,0}, new int[]{-1,0}));
 	
 	public static enum FindType { 
-		UNEXPLORED, FOOD, AGENT 
+		UNEXPLORED, FOOD, AGENT, HQ
 	}
 	
 	
@@ -35,19 +35,19 @@ public class Map {
 		agentId = id;
 	}
 	
-	public void updateMap(StateMessage msg)
+	public void updateMap(Neighborhood msg)
 	{		
 		if(map.size() == 0)
 		{
 			//when map is empty add neighborhood to map like it was received
-			UpdateMapWithNeighborhood(msg.neighborhood, 0, 0);
+			UpdateMapWithNeighborhood(msg, 0, 0);
 		}
 		else
 		{
 			//if we already have elements in map do appropriate neighborhood shift			
-			int offset[] = getOffset(msg.neighborhood);
+			int offset[] = getOffset(msg);
 			
-			UpdateMapWithNeighborhood(msg.neighborhood, agentLocation.getX() + offset[0], agentLocation.getY() + offset[1]);	
+			UpdateMapWithNeighborhood(msg, agentLocation.getX() + offset[0], agentLocation.getY() + offset[1]);	
 		}
 		
 	}
@@ -104,6 +104,12 @@ public class Map {
 				}
 				case AGENT:
 					//TODO: implement this
+					break;
+				case HQ:
+					if(field == -2)
+					{
+						satisfyCondition = true;
+					}
 					break;
 			}
 			

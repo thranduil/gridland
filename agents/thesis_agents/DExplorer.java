@@ -75,7 +75,13 @@ public class DExplorer extends Agent{
 				//update local map with all received states
 				while(states.peek() != null)
 				{
-					localMap.updateMap(states.poll());
+					StateMessage msg = states.poll();
+					if(msg.hasFlag)
+					{
+						changeMode(Mode.HOMERUN);
+					}
+					
+					localMap.updateMap(msg.neighborhood);
 					localMap.printLocalMap();
 				}
 				
@@ -104,25 +110,19 @@ public class DExplorer extends Agent{
 					}
 					case FOODHUNT:
 					{
-						
+						//TODO: check if any flag is nearer than current Target
 						break;
 					}
 					case HITMAN:
 						break;
 					case HOMERUN:
+					{
+						nextTarget = localMap.findNearest(FindType.HQ);
 						break;
-					default:
-						break;
+					}
 				}
 				
 				//compute next move based on nextTarget
-				
-				/*
-				if(plan.isEmpty())
-				{
-					//plan path to nextTarget
-				}
-				*/
 				
 				//TODO: perform planning on other thread and here wait
 				//for specific limit and use old plan if computing takes too long
