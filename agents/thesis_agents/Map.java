@@ -373,7 +373,7 @@ public class Map {
 			returnToHQ = true;
 		}
 		
-		//add all map fields to priorityQueue with distance set to max
+		//add all map fields to list with distance set to max
 		for(Position p : map.keySet())
 		{
 			if(p.equals(agentLocation))
@@ -509,7 +509,9 @@ public class Map {
 	
 	private boolean canMove(Position p, boolean includeHQ)
 	{
-		if(map.containsKey(p) && (map.get(p) == 0 || map.get(p) == -3 || map.get(p) == -5 || (map.get(p) == -2 && includeHQ)))
+		//when we are returning to hq agent can move to hq, but not on food
+		//in other cases agent can't move to hq, but can move to food
+		if(map.containsKey(p) && (map.get(p) == 0 || (map.get(p) == -3 && !includeHQ) || (map.get(p) == -5 && !includeHQ) || (map.get(p) == -2 && includeHQ)))
 		{
 			return true;
 		}
