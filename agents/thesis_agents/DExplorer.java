@@ -14,7 +14,7 @@ import thesis_agents.Map.FindType;
 public class DExplorer extends Agent{
 
 	private static enum Mode {
-		EXPLORE, HOMERUN, HITMAN, FOODHUNT
+		EXPLORE, HOMERUN, HITMAN, FOODHUNT, ONLYEXPLORE, NEARHQ
 	}
 	
 	/* Private variables */
@@ -69,20 +69,19 @@ public class DExplorer extends Agent{
 		while(isAlive())
 		{
 			//process state if there is any
-			//TODO: optimization - if there is no states, compute next move more accurate
 			if(!states.isEmpty())
 			{
 				//update local map with all received states
 				while(states.peek() != null)
 				{
 					StateMessage msg = states.poll();
-					if(msg.hasFlag)
+					if(msg.hasFlag && mode != Mode.NEARHQ)
 					{
 						changeMode(Mode.HOMERUN);
 					}
 					
 					localMap.updateMap(msg.neighborhood);
-					localMap.printLocalMap();
+					//localMap.printLocalMap();
 				}
 				
 				//finding next target field based on agent mode
@@ -116,6 +115,19 @@ public class DExplorer extends Agent{
 						nextTarget = localMap.findNearest(FindType.HQ);
 						break;
 					}
+					case NEARHQ:
+					{
+						nextTarget = localMap.findNearest(FindType.HQ);
+						nextTarget = localMap.findEmptyFieldNear(nextTarget, 2);
+						changeMode(Mode.HOMERUN);
+						break;
+					}
+					case ONLYEXPLORE:
+					{
+						nextTarget = localMap.findNearest(FindType.UNEXPLORED);
+						changeMode(Mode.EXPLORE);
+						break;
+					}
 				}
 				
 				//compute next move based on nextTarget
@@ -126,26 +138,51 @@ public class DExplorer extends Agent{
 				plan = new ConcurrentLinkedQueue<Direction>(localMap.dijkstraPlan(nextTarget));
 				if(plan == null || plan.size() == 0)
 				{
+					localMap.setLastMove(Direction.NONE);
 					this.move(Direction.NONE);
+					
+					//if food was found, but is not accessible
+					//now search only for unexplored places
+					if(mode == Mode.FOODHUNT)
+					{
+						changeMode(Mode.ONLYEXPLORE);
+					}
+					
+					//if path to hq can not be found 
+					//search for target point in vicinity of hq
+					if(mode == Mode.HOMERUN)
+					{
+						changeMode(Mode.NEARHQ);
+					}
 					continue;
 				}
 				else
 				{
 					Direction nextMove = plan.poll();
-					
+
 					if(localMap.canSafelyMove(nextMove))
 					{
+						localMap.setLastMove(nextMove);
 						this.move(nextMove);
 					}
 					else
 					{
 						if(Math.random() < 0.2)
+						{
+							localMap.setLastMove(nextMove);
 							this.move(nextMove);
+						}
 						else
+						{
+							localMap.setLastMove(Direction.NONE);
 							this.move(Direction.NONE);
+						}
 					}
 					
+					
+					
 					//send message
+					
 				}
 			}
 		}

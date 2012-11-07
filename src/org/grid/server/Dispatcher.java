@@ -183,6 +183,11 @@ public class Dispatcher implements Runnable {
 					if(getAgent() != null && getAgent().isAlive())
 					{
 						Neighborhood n = game.scanNeighborhood(neighborhoodSize, getAgent());
+						while(n == null)
+						{
+							System.err.println("Rescanning neighborhood...");
+							n = game.scanNeighborhood(neighborhoodSize, getAgent());
+						}
 						sendMessage(new NewMessage.StateMessage(getAgent().getDirection(), n, agent.hasFlag()).encodeMessage());
 					}
 					

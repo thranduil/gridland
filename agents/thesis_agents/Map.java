@@ -127,6 +127,36 @@ public class Map {
 		return nearest;
 	}
 	
+	/**
+	 * Find empty field near given position near.
+	 *
+	 * @param position the position
+	 * @param radius the radius of search
+	 * @return the position empty position
+	 */
+	public Position findEmptyFieldNear(Position position, int radius)
+	{
+		if(position == null)
+		{
+			System.err.println("findEmptyFieldNear() - Position is null.");
+			return new Position(0,0);
+		}
+		//find position in radius around given position
+		for(int i = -radius; i < radius; i++)
+		{
+			for(int j = -radius; j < radius; j++)
+			{
+				if (map.containsKey(new Position(position.getX() + i, position.getY() + j)) 
+					&& map.get(new Position(position.getX() + i, position.getY() +j)) == 0) {
+					
+					return new Position(position.getX() + i, position.getY() +j);
+				}
+			}
+		}
+
+		return position;
+	}
+	
 	public boolean canSafelyMove(Direction nextMove) {
 		Position n = null;
 		switch(nextMove)
@@ -333,7 +363,6 @@ public class Map {
 		
 		if(nextTarget == null)
 		{
-			lastMove = Direction.NONE;
 			return resultPath;
 		}
 		
@@ -380,7 +409,6 @@ public class Map {
 					resultPath.addFirst(getDirectionFrom(previous.get(node), node));
 					node = previous.get(node);
 				}
-				lastMove = resultPath.peekFirst();
 				return resultPath;
 			}
 			
@@ -429,8 +457,15 @@ public class Map {
 			}
 		}
 		System.err.println("Path to (" + nextTarget.getX() + "," + nextTarget.getY() + ") was not found");
-		lastMove = Direction.NONE;
+		
+		//TODO: if agent searches place to hq and cannot find it
+		//try with searching empty place in hq neighborhood
 		return resultPath;
+	}
+	
+	public void setLastMove(Direction d)
+	{
+		lastMove = d;
 	}
 	
 	private Direction getDirectionFrom(Position from, Position to) {
