@@ -53,6 +53,16 @@ public class Map {
 		
 	}
 	
+	public void updateMap(AgentsMessage msg)
+	{
+		
+	}
+	
+	public byte[] getEncodedMap()
+	{
+		return new byte[]{};
+	}
+	
 	public void printLocalMap()
 	{
 		for(int y = -17; y <= 17; y++)
@@ -142,9 +152,9 @@ public class Map {
 			return new Position(0,0);
 		}
 		//find position in radius around given position
-		for(int i = -radius; i < radius; i++)
+		for(int i = -radius; i <= radius; i++)
 		{
-			for(int j = -radius; j < radius; j++)
+			for(int j = -radius; j <= radius; j++)
 			{
 				if (map.containsKey(new Position(position.getX() + i, position.getY() + j)) 
 					&& map.get(new Position(position.getX() + i, position.getY() +j)) == 0) {
@@ -264,97 +274,7 @@ public class Map {
 		
 		return true;
 	}
-	
-	private double GetDistanceFromAgent(Position p)
-	{		
-		return Math.abs(agentLocation.getX() - p.getX()) + Math.abs(agentLocation.getY() - p.getY());
-	}
-	
-	private int[] getOffset(Neighborhood n)
-	{	
-		int[] offset = null;
-		
-		switch(lastMove)
-		{
-			case UP:
-				offset = new int[]{0,-1};
-				break;
-			case DOWN:
-				offset = new int[]{0,1};
-				break;
-			case NONE:
-				offset = new int[]{0,0};
-				break;
-			case LEFT:
-				offset = new int[]{-1,0};
-				break;
-			case RIGHT:
-				offset = new int[]{1,0};
-				break;
-		}
-		
-		boolean aligned = true;
-		
-		int xStart = (offset[0] == -1 ) ? -n.getSize() + 1 : -n.getSize();
-		int xEnd = (offset[0] == 1) ? n.getSize() - 1 : n.getSize();
-		int yStart = (offset[1] == -1 ) ? -n.getSize() + 1 : -n.getSize();
-		int yEnd = (offset[1] == 1) ? n.getSize() -1 : n.getSize();
-		
-		for(int y = yStart; y <= yEnd; y++)
-		{
-			for(int x = xStart; x <= xEnd; x++)
-			{
-				int current = n.getCell(x, y);
-				
-				//check only wall, empty space or hq
-				if(current == 0 || current == -1 || current == -2 || current == -4)
-				{
-					int local = map.get(new Position(x + agentLocation.getX() + offset[0], y + agentLocation.getY() + offset[1] ));
-					
-					//skip agents
-					if(local > 0) continue;
-					
-					if(current != local)
-					{
-						aligned = false;
-						break;
-					}
-				}
-			}
-			if(aligned == false)
-			{
-				break;
-			}
-		}
-		
-		if(aligned)
-		{
-			return offset;
-		}
-		
-		System.err.println("Offset can not be found.");
-		return new int[]{0,0};		
-	}
-	
-	private void UpdateMapWithNeighborhood(Neighborhood n, int offsetX, int offsetY)
-	{
-		for(int y = -n.getSize(); y <= n.getSize(); y++)
-		{
-			for(int x = -n.getSize(); x <= n.getSize(); x++)
-			{
-				int field = n.getCell(x, y);
-				Position pos = new Position(x + offsetX, y + offsetY);
-				
-				map.put(pos, field);
-				
-				if(field == agentId)
-				{
-					agentLocation = pos;
-				}
-			}
-		}
-	}
-		
+			
 	public LinkedList<Direction> dijkstraPlan(Position nextTarget) {
 		
 		HashMap<Position, Position> previous = new HashMap<Position, Position>();
@@ -457,15 +377,126 @@ public class Map {
 			}
 		}
 		System.err.println("Path to (" + nextTarget.getX() + "," + nextTarget.getY() + ") was not found");
-		
-		//TODO: if agent searches place to hq and cannot find it
-		//try with searching empty place in hq neighborhood
 		return resultPath;
 	}
 	
 	public void setLastMove(Direction d)
 	{
 		lastMove = d;
+	}
+	
+	public ArrayList<Integer> getFriendlyAgents(int radius)
+	{
+		ArrayList<Integer> agents = new ArrayList<Integer>();
+		
+		for(int x = -radius; x <= radius; x++)
+		{
+			for(int y = -radius; y <= radius; y++)
+			{
+				if(x == 0 && y == 0)
+				{
+					continue;
+				}
+				
+				Position current = new Position(agentLocation.getX() + x, agentLocation.getY() + y);
+				if(map.containsKey(current) && map.get(current) > 0)
+				{
+					agents.add(map.get(current));
+				}
+			}
+		}
+		
+		return agents;
+	}
+	
+	private double GetDistanceFromAgent(Position p)
+	{		
+		return Math.abs(agentLocation.getX() - p.getX()) + Math.abs(agentLocation.getY() - p.getY());
+	}
+	
+	private int[] getOffset(Neighborhood n)
+	{	
+		int[] offset = null;
+		
+		switch(lastMove)
+		{
+			case UP:
+				offset = new int[]{0,-1};
+				break;
+			case DOWN:
+				offset = new int[]{0,1};
+				break;
+			case NONE:
+				offset = new int[]{0,0};
+				break;
+			case LEFT:
+				offset = new int[]{-1,0};
+				break;
+			case RIGHT:
+				offset = new int[]{1,0};
+				break;
+		}
+		
+		boolean aligned = true;
+		
+		int xStart = (offset[0] == -1 ) ? -n.getSize() + 1 : -n.getSize();
+		int xEnd = (offset[0] == 1) ? n.getSize() - 1 : n.getSize();
+		int yStart = (offset[1] == -1 ) ? -n.getSize() + 1 : -n.getSize();
+		int yEnd = (offset[1] == 1) ? n.getSize() -1 : n.getSize();
+		
+		for(int y = yStart; y <= yEnd; y++)
+		{
+			for(int x = xStart; x <= xEnd; x++)
+			{
+				int current = n.getCell(x, y);
+				
+				//check only wall, empty space or hq
+				if(current == 0 || current == -1 || current == -2 || current == -4)
+				{
+					int local = map.get(new Position(x + agentLocation.getX() + offset[0], y + agentLocation.getY() + offset[1] ));
+					
+					//skip agents
+					if(local > 0) continue;
+					
+					if(current != local)
+					{
+						aligned = false;
+						break;
+					}
+				}
+			}
+			if(aligned == false)
+			{
+				break;
+			}
+		}
+		
+		if(aligned)
+		{
+			return offset;
+		}
+		
+		System.err.println("Offset can not be found.");
+		return new int[]{0,0};		
+	}
+	
+	private void UpdateMapWithNeighborhood(Neighborhood n, int offsetX, int offsetY)
+	{
+		for(int y = -n.getSize(); y <= n.getSize(); y++)
+		{
+			for(int x = -n.getSize(); x <= n.getSize(); x++)
+			{
+				int field = n.getCell(x, y);
+				Position pos = new Position(x + offsetX, y + offsetY);
+				
+				map.put(pos, field);
+				
+				if(field == agentId)
+				{
+					agentLocation = pos;
+				}
+			}
+		}
 	}
 	
 	private Direction getDirectionFrom(Position from, Position to) {

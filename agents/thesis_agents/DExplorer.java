@@ -1,5 +1,6 @@
 package thesis_agents;
 
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.grid.agent.Agent;
@@ -22,6 +23,7 @@ public class DExplorer extends Agent{
 	
 	private ConcurrentLinkedQueue<StateMessage> states;
 	private ConcurrentLinkedQueue<Direction> plan;
+	private ConcurrentLinkedQueue<AgentsMessage> inbox;
 	
 	Mode mode;
 	
@@ -38,13 +40,13 @@ public class DExplorer extends Agent{
 		localMap = new Map(getId());
 		states = new ConcurrentLinkedQueue<StateMessage>();
 		plan = new ConcurrentLinkedQueue<Direction>();
+		inbox = new ConcurrentLinkedQueue<AgentsMessage>();
 		mode = Mode.EXPLORE;
 	}
 
 	@Override
 	public void receive(int from, byte[] message) {
-		// TODO Auto-generated method stub
-		
+		inbox.add(new AgentsMessage(from, message));
 	}
 
 	@Override
@@ -72,7 +74,7 @@ public class DExplorer extends Agent{
 			if(!states.isEmpty())
 			{
 				//update local map with all received states
-				while(states.peek() != null)
+				while(!states.isEmpty())
 				{
 					StateMessage msg = states.poll();
 					if(msg.hasFlag && mode != Mode.NEARHQ)
@@ -83,6 +85,20 @@ public class DExplorer extends Agent{
 					localMap.updateMap(msg.neighborhood);
 					//localMap.printLocalMap();
 				}
+				
+				//process all received messages
+				while(!inbox.isEmpty())
+				{
+					localMap.updateMap(inbox.poll());
+				}
+				
+				//get all visible friendly agents
+				ArrayList<Integer> agents = localMap.getFriendlyAgents(2);
+				for(Integer a : agents)
+				{
+					send(a, localMap.getEncodedMap());
+				}
+				
 				
 				//finding next target field based on agent mode
 				switch(mode)
@@ -177,12 +193,7 @@ public class DExplorer extends Agent{
 							localMap.setLastMove(Direction.NONE);
 							this.move(Direction.NONE);
 						}
-					}
-					
-					
-					
-					//send message
-					
+					}					
 				}
 			}
 		}
