@@ -10,5 +10,11 @@ public class AgentsMessage {
 		this.agentId = from;
 		this.message = message;
 	}
+	
+	public String getStringMessage()
+	{
+		String t = new String(message);
+		return t;
+	}
 
 }

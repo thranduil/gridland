@@ -2,6 +2,8 @@ package org.grid.protocol;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 // TODO: Auto-generated Javadoc
 public class NewMessage {
@@ -284,7 +286,7 @@ public class NewMessage {
 		
 		public int getTo()
 		{
-			if(data != null && data.size() == 3)
+			if(data != null && data.size() >= 2)
 			{
 				return Integer.parseInt(data.get(1));
 			}
@@ -293,9 +295,25 @@ public class NewMessage {
 		
 		public byte[] getMessage()
 		{
-			if(data != null && data.size() == 3)
+			if(data != null && data.size() >= 3)
 			{
-				return data.get(2).getBytes();
+				List<Byte> result = new ArrayList<Byte>();
+				
+				for(int i = 2; i < data.size(); i++)
+				{
+					byte[] tmp = data.get(i).getBytes();
+					for(byte b : tmp)
+					{
+						result.add(Byte.valueOf(b));
+					}
+					
+					//add separator ";" to all but last item
+					if(i != data.size() - 1)
+					{
+						result.add(Byte.valueOf("59"));
+					}
+				}
+				return toByteArray(result);
 			}
 			return new byte[]{};
 		}
@@ -316,7 +334,7 @@ public class NewMessage {
 		
 		public int getFrom()
 		{
-			if(data != null && data.size() == 3)
+			if(data != null && data.size() >= 2)
 			{
 				return Integer.parseInt(data.get(1));
 			}
@@ -325,11 +343,36 @@ public class NewMessage {
 		
 		public byte[] getMessage()
 		{
-			if(data != null && data.size() == 3)
+			if(data != null && data.size() >= 3)
 			{
-				return data.get(2).getBytes();
+				List<Byte> result = new ArrayList<Byte>();
+				
+				for(int i = 2; i < data.size(); i++)
+				{
+					byte[] tmp = data.get(i).getBytes();
+					for(byte b : tmp)
+					{
+						result.add(Byte.valueOf(b));
+					}
+					
+					//add separator ";" to all but last item
+					if(i != data.size() - 1)
+					{
+						result.add(Byte.valueOf("59"));
+					}
+				}
+				return toByteArray(result);
 			}
 			return new byte[]{};
 		}
+	}
+	
+	byte[] toByteArray(List<Byte> list){
+	  byte[] ret = new byte[list.size()];
+	  for(int i = 0;i < ret.length;i++)
+	  {
+	    ret[i] = list.get(i);
+	  }
+	  return ret;
 	}
 }

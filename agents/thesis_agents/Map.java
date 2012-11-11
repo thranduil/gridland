@@ -55,12 +55,13 @@ public class Map {
 	
 	public void updateMap(AgentsMessage msg)
 	{
-		
+		System.out.println(msg.getStringMessage());
 	}
 	
 	public byte[] getEncodedMap()
 	{
-		return new byte[]{};
+		byte[] t = "13;0;0;0;-1;Testing_sending_map".getBytes();
+		return t;
 	}
 	
 	public void printLocalMap()
