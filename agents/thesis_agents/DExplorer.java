@@ -83,7 +83,7 @@ public class DExplorer extends Agent{
 					}
 					
 					localMap.updateMap(msg.neighborhood);
-					//localMap.printLocalMap();
+					localMap.printLocalMap();
 				}
 				
 				//process all received messages
@@ -93,7 +93,7 @@ public class DExplorer extends Agent{
 				}
 				
 				//get all visible friendly agents
-				ArrayList<Integer> agents = localMap.getFriendlyAgents(2);
+				ArrayList<Integer> agents = localMap.getFriendlyAgents(3);
 				for(Integer a : agents)
 				{
 					send(a, localMap.getEncodedMap());

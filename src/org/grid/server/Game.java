@@ -669,8 +669,8 @@ public class Game {
 						to);
 				return;
 			}
-
-			cltfrom.getAgent().pushMessage(to, message, message.length / messageSpeed);
+			
+			cltfrom.getAgent().pushMessage(to, message, flagMode == FlagMode.BENCHMARK ? 1 : message.length / messageSpeed);
 
 		} else
 			return;

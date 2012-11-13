@@ -55,7 +55,20 @@ public class Map {
 	
 	public void updateMap(AgentsMessage msg)
 	{
-		HashMap<Position, Integer> receivedMap = msg.getMap(); 
+		HashMap<Position, Integer> receivedMap = msg.getMap();
+		
+		//find hq in received map and get map offset
+		Position offset = getOffsetForReceivedMap(receivedMap);
+		
+		for(Position p : receivedMap.keySet())
+		{
+			//update only empty, wall or flag fields
+			if(receivedMap.get(p) == 0 || receivedMap.get(p) == -1 || receivedMap.get(p) == -3 || receivedMap.get(p) == -5)
+			{
+				map.put(new Position(p.getX() + offset.getX(), p.getY() + offset.getY()), receivedMap.get(p));
+			}
+		}
+		System.out.println("Map updated.");
 	}
 	
 	public byte[] getEncodedMap()
@@ -65,8 +78,7 @@ public class Map {
 		{
 			sb.append(p.getX()+","+p.getY()+","+map.get(p)+";");
 		}
-		byte[] t = sb.toString().getBytes();
-		return t;
+		return sb.toString().getBytes();
 	}
 	
 	public void printLocalMap()
@@ -484,6 +496,38 @@ public class Map {
 		
 		System.err.println("Offset can not be found.");
 		return new int[]{0,0};		
+	}
+	
+	private Position getOffsetForReceivedMap(HashMap<Position, Integer> receivedMap)
+	{
+		Position localHQ = null;
+		Position remoteHQ = null;
+		
+		//get hq from local and received map
+		for(int x = -1; x <= 1; x++)
+		{
+			for(int y = -1; y <= 1; y++)
+			{
+				Position p = new Position(x,y);
+				if(map.containsKey(p) && map.get(p) == -2)
+				{
+					localHQ = p;
+				}
+				
+				if(receivedMap.containsKey(p) && receivedMap.get(p) == -2)
+				{
+					remoteHQ = p;
+				}
+			}
+		}
+		
+		if(localHQ == null || remoteHQ == null)
+		{
+			System.err.println("Could not get offset from received map.");
+			return null;
+		}
+		
+		return new Position(localHQ.getX() - remoteHQ.getX(), localHQ.getY() - remoteHQ.getY());
 	}
 	
 	private void UpdateMapWithNeighborhood(Neighborhood n, int offsetX, int offsetY)
