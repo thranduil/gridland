@@ -17,7 +17,7 @@ gameplay.flags = BENCHMARK
 
 #Protocol options
 #Maximum personal message size (optional)
-message.size=256
+message.size=1024000
 
 
 #Team specification

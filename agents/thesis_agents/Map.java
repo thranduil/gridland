@@ -55,12 +55,17 @@ public class Map {
 	
 	public void updateMap(AgentsMessage msg)
 	{
-		System.out.println(msg.getStringMessage());
+		HashMap<Position, Integer> receivedMap = msg.getMap(); 
 	}
 	
 	public byte[] getEncodedMap()
 	{
-		byte[] t = "13;0;0;0;-1;Testing_sending_map".getBytes();
+		StringBuilder sb = new StringBuilder();
+		for(Position p : map.keySet())
+		{
+			sb.append(p.getX()+","+p.getY()+","+map.get(p)+";");
+		}
+		byte[] t = sb.toString().getBytes();
 		return t;
 	}
 	
