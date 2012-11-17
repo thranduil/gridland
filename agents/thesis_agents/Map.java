@@ -37,7 +37,10 @@ public class Map {
 	}
 	
 	public void updateMap(Neighborhood msg)
-	{		
+	{	
+		System.out.println("Last move:"+ lastMove);
+		//printNeighborhood(msg);
+		
 		if(map.size() == 0)
 		{
 			//when map is empty add neighborhood to map like it was received
@@ -55,20 +58,41 @@ public class Map {
 	
 	public void updateMap(AgentsMessage msg)
 	{
+		//do not process agents msg if we don't have
+		//local map filled
+		if(map.isEmpty())
+		{
+			return;
+		}
+		
 		HashMap<Position, Integer> receivedMap = msg.getMap();
 		
 		//find hq in received map and get map offset
 		Position offset = getOffsetForReceivedMap(receivedMap);
 		
+		/*
+		System.out.println("Received map");
+		printMap(receivedMap);
+		*/
+		
 		for(Position p : receivedMap.keySet())
 		{
-			//update only empty, wall or flag fields
-			if(receivedMap.get(p) == 0 || receivedMap.get(p) == -1 || receivedMap.get(p) == -3 || receivedMap.get(p) == -5)
+			//skip my field
+			if((map.containsKey(p) && map.get(p) == agentId)
+				|| (receivedMap.get(p) == agentId))
 			{
-				map.put(new Position(p.getX() + offset.getX(), p.getY() + offset.getY()), receivedMap.get(p));
+				continue;
 			}
+			
+			//update all fields
+			map.put(new Position(p.getX() + offset.getX(), p.getY() + offset.getY()), receivedMap.get(p));
+		
 		}
-		System.out.println("Map updated.");
+		
+		/*
+		System.out.println("Updated map");
+		printLocalMap();
+		*/
 	}
 	
 	public byte[] getEncodedMap()
@@ -83,23 +107,9 @@ public class Map {
 	
 	public void printLocalMap()
 	{
-		for(int y = -17; y <= 17; y++)
-		{
-			for(int x = -17; x <= 17; x++)
-			{ 
-				Position pos = new Position(x, y);
-				int a = 1;
-				if(map.containsKey(pos))
-				{
-					a = map.get(pos);
-				}
-				
-				System.out.print(getTitle(a) + " ");
-			}
-			System.out.println();
-		}
+		this.printMap(map);
 	}
-	
+		
 	public Position findNearest(FindType type)
 	{
 		Position nearest = null;
@@ -455,6 +465,9 @@ public class Map {
 				break;
 		}
 		
+		return offset;
+		
+		/*
 		boolean aligned = true;
 		
 		int xStart = (offset[0] == -1 ) ? -n.getSize() + 1 : -n.getSize();
@@ -494,8 +507,13 @@ public class Map {
 			return offset;
 		}
 		
-		System.err.println("Offset can not be found.");
-		return new int[]{0,0};		
+		System.err.println("\nOffset for neighborhood can not be found.");
+		System.out.println("Last move:" + lastMove);
+		printNeighborhood(n);
+		System.out.println("Local map");
+		printLocalMap();
+		return new int[]{0,0};	
+		*/	
 	}
 	
 	private Position getOffsetForReceivedMap(HashMap<Position, Integer> receivedMap)
@@ -524,6 +542,10 @@ public class Map {
 		if(localHQ == null || remoteHQ == null)
 		{
 			System.err.println("Could not get offset from received map.");
+			System.out.println("receivedMap");
+			printMap(receivedMap);
+			System.out.println("current local map");
+			printLocalMap();
 			return null;
 		}
 		
@@ -597,6 +619,38 @@ public class Map {
 			return true;
 		}
 		return false;
+	}
+	
+	private void printMap(HashMap<Position, Integer> map)
+	{
+		for(int y = -10; y <= 10; y++)
+		{
+			for(int x = -10; x <= 10; x++)
+			{ 
+				Position pos = new Position(x, y);
+				int a = 1;
+				if(map.containsKey(pos))
+				{
+					a = map.get(pos);
+				}
+				
+				System.out.print(getTitle(a) + " ");
+			}
+			System.out.println();
+		}
+	}
+	
+	private void printNeighborhood(Neighborhood n)
+	{
+		System.out.println("Neighborhood (" + n.getWidth() + "x" + n.getHeight() + ")");
+		for(int y = -n.getSize(); y <= n.getSize(); y++)
+		{
+			for(int x = -n.getSize(); x <= n.getSize(); x++)
+			{
+				System.out.print(getTitle(n.getCell(x, y)) + " ");
+			}
+			System.out.println();
+		}
 	}
 	
 	private String getTitle(int title)

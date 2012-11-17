@@ -31,8 +31,7 @@ public class DExplorer extends Agent{
 	
 	@Override
 	public void terminate() {
-		// TODO Auto-generated method stub
-		
+		System.out.println("NOOOOO!");
 	}
 
 	@Override
@@ -70,6 +69,12 @@ public class DExplorer extends Agent{
 		Position nextTarget = null;
 		while(isAlive())
 		{
+			//process all received messages
+			while(!inbox.isEmpty())
+			{
+				localMap.updateMap(inbox.poll());
+			}
+			
 			//process state if there is any
 			if(!states.isEmpty())
 			{
@@ -83,13 +88,8 @@ public class DExplorer extends Agent{
 					}
 					
 					localMap.updateMap(msg.neighborhood);
+					System.out.println("Current local map");
 					localMap.printLocalMap();
-				}
-				
-				//process all received messages
-				while(!inbox.isEmpty())
-				{
-					localMap.updateMap(inbox.poll());
 				}
 				
 				//get all visible friendly agents
@@ -98,8 +98,7 @@ public class DExplorer extends Agent{
 				{
 					send(a, localMap.getEncodedMap());
 				}
-				
-				
+							
 				//finding next target field based on agent mode
 				switch(mode)
 				{
@@ -176,15 +175,18 @@ public class DExplorer extends Agent{
 				{
 					Direction nextMove = plan.poll();
 
-					if(localMap.canSafelyMove(nextMove))
+					//move agent if it can be safely moved or
+					//if this move is the last in plan (flag or hq)
+					if(plan.isEmpty() || localMap.canSafelyMove(nextMove))
 					{
 						localMap.setLastMove(nextMove);
 						this.move(nextMove);
 					}
 					else
 					{
-						if(Math.random() < 0.2)
+						if(Math.random() < 0.1)
 						{
+							System.out.println("Let's gamble ;)");
 							localMap.setLastMove(nextMove);
 							this.move(nextMove);
 						}
