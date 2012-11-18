@@ -36,10 +36,12 @@ public class Map {
 		agentId = id;
 	}
 	
-	public void updateMap(Neighborhood msg)
+	public void updateMap(Neighborhood msg, boolean debug)
 	{	
-		System.out.println("Last move:"+ lastMove);
-		//printNeighborhood(msg);
+		if(debug)
+		{
+			printNeighborhood(msg);
+		}
 		
 		if(map.size() == 0)
 		{
@@ -52,11 +54,10 @@ public class Map {
 			int offset[] = getOffset(msg);
 			
 			UpdateMapWithNeighborhood(msg, agentLocation.getX() + offset[0], agentLocation.getY() + offset[1]);	
-		}
-		
+		}		
 	}
 	
-	public void updateMap(AgentsMessage msg)
+	public void updateMap(AgentsMessage msg, boolean debug)
 	{
 		//do not process agents msg if we don't have
 		//local map filled
@@ -67,13 +68,14 @@ public class Map {
 		
 		HashMap<Position, Integer> receivedMap = msg.getMap();
 		
+		if(debug)
+		{
+			System.out.println("Received map");
+			printMap(receivedMap);
+		}
+		
 		//find hq in received map and get map offset
 		Position offset = getOffsetForReceivedMap(receivedMap);
-		
-		/*
-		System.out.println("Received map");
-		printMap(receivedMap);
-		*/
 		
 		for(Position p : receivedMap.keySet())
 		{
@@ -86,13 +88,13 @@ public class Map {
 			
 			//update all fields
 			map.put(new Position(p.getX() + offset.getX(), p.getY() + offset.getY()), receivedMap.get(p));
-		
 		}
 		
-		/*
-		System.out.println("Updated map");
-		printLocalMap();
-		*/
+		if(debug)
+		{
+			System.out.println("Updated map");
+			printLocalMap();
+		}
 	}
 	
 	public byte[] getEncodedMap()
@@ -410,6 +412,7 @@ public class Map {
 	
 	public void setLastMove(Direction d)
 	{
+		System.out.println("Move " + d);
 		lastMove = d;
 	}
 	
@@ -541,10 +544,10 @@ public class Map {
 		
 		if(localHQ == null || remoteHQ == null)
 		{
-			System.err.println("Could not get offset from received map.");
-			System.out.println("receivedMap");
+			System.err.println("Could not get offset for received map.");
+			System.out.println("Received map");
 			printMap(receivedMap);
-			System.out.println("current local map");
+			System.out.println("Current local map");
 			printLocalMap();
 			return null;
 		}

@@ -55,7 +55,7 @@ import org.grid.server.Field.BodyPosition;
 import org.grid.server.Field.Cell;
 import org.grid.server.Game.FlagMode;
 
-
+//java -cp bin org.grid.server.Main games/benchmark.game
 // TODO: Auto-generated Javadoc
 public class Main {
 

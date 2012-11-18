@@ -11,6 +11,7 @@ import org.grid.protocol.Position;
 
 import thesis_agents.Map.FindType;
 
+//java -cp bin org.grid.agent.Agent localhost thesis_agents.DExplorer
 @Membership(team = "dExplorer", passphrase = "1")
 public class DExplorer extends Agent{
 
@@ -25,6 +26,7 @@ public class DExplorer extends Agent{
 	private ConcurrentLinkedQueue<Direction> plan;
 	private ConcurrentLinkedQueue<AgentsMessage> inbox;
 	
+	boolean debug = true;
 	Mode mode;
 	
 	/* Overridden methods */
@@ -54,7 +56,7 @@ public class DExplorer extends Agent{
 		
 		if(direction != Direction.NONE)
 		{
-			System.out.println("Agent is still moving! This should not happen.");
+			System.err.println("Agent is still moving! This should not happen.");
 		}
 		
 		states.add(new StateMessage(neighborhood, hasFlag));
@@ -72,7 +74,7 @@ public class DExplorer extends Agent{
 			//process all received messages
 			while(!inbox.isEmpty())
 			{
-				localMap.updateMap(inbox.poll());
+				localMap.updateMap(inbox.poll(), debug);
 			}
 			
 			//process state if there is any
@@ -87,13 +89,17 @@ public class DExplorer extends Agent{
 						changeMode(Mode.HOMERUN);
 					}
 					
-					localMap.updateMap(msg.neighborhood);
-					System.out.println("Current local map");
-					localMap.printLocalMap();
+					localMap.updateMap(msg.neighborhood, debug);
+					
+					if(debug)
+					{
+						System.out.println("Local map after merging with received neighborhood");
+						localMap.printLocalMap();
+					}
 				}
 				
 				//get all visible friendly agents
-				ArrayList<Integer> agents = localMap.getFriendlyAgents(3);
+				ArrayList<Integer> agents = localMap.getFriendlyAgents(1);
 				for(Integer a : agents)
 				{
 					send(a, localMap.getEncodedMap());
@@ -184,7 +190,7 @@ public class DExplorer extends Agent{
 					}
 					else
 					{
-						if(Math.random() < 0.1)
+						if(Math.random() < getCourage())
 						{
 							System.out.println("Let's gamble ;)");
 							localMap.setLastMove(nextMove);
@@ -204,9 +210,24 @@ public class DExplorer extends Agent{
 	
 	/* Private methods */
 	
+	private double getCourage() {
+		switch(mode)
+		{
+		case HOMERUN:
+			return 0.6;
+		case NEARHQ:
+			return 0.5;
+		default:
+			return 0.3;
+		}
+	}
+
 	private void changeMode(Mode m)
 	{
-		System.out.println("Changing mode to " + m.toString());
+		if(debug)
+		{
+			System.out.println("Changing mode to " + m.toString());
+		}
 		mode = m;
 	}
 

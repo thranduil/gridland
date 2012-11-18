@@ -90,7 +90,9 @@ public class ProtocolSocket {
 					try {
 						message = in.readUTF();
 					} catch (Exception e) {
-						e.printStackTrace();
+						if (debug)
+							e.printStackTrace();
+						close();
 					}
 
 					if (message == null || message.length() == 0)
@@ -147,8 +149,9 @@ public class ProtocolSocket {
 							e.printStackTrace();
 						close();
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						if (debug)
+							e.printStackTrace();
+						close();
 					}
 
 				}
