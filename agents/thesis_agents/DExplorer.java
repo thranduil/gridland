@@ -54,12 +54,7 @@ public class DExplorer extends Agent{
 	public void state(int stamp, Neighborhood neighborhood,
 			Direction direction, boolean hasFlag) {
 		
-		if(direction != Direction.NONE)
-		{
-			System.err.println("Agent is still moving! This should not happen.");
-		}
-		
-		states.add(new StateMessage(neighborhood, hasFlag));
+		states.add(new StateMessage(neighborhood, hasFlag, direction));
 	}
 
 	@Override
@@ -89,7 +84,7 @@ public class DExplorer extends Agent{
 						changeMode(Mode.HOMERUN);
 					}
 					
-					localMap.updateMap(msg.neighborhood, debug);
+					localMap.updateMap(msg, debug);
 					
 					if(debug)
 					{
@@ -159,7 +154,7 @@ public class DExplorer extends Agent{
 				plan = new ConcurrentLinkedQueue<Direction>(localMap.dijkstraPlan(nextTarget));
 				if(plan == null || plan.size() == 0)
 				{
-					localMap.setLastMove(Direction.NONE);
+					System.out.println("Move: NONE");
 					this.move(Direction.NONE);
 					
 					//if food was found, but is not accessible
@@ -185,7 +180,7 @@ public class DExplorer extends Agent{
 					//if this move is the last in plan (flag or hq)
 					if(plan.isEmpty() || localMap.canSafelyMove(nextMove))
 					{
-						localMap.setLastMove(nextMove);
+						System.out.println("Move: " + nextMove);
 						this.move(nextMove);
 					}
 					else
@@ -193,12 +188,12 @@ public class DExplorer extends Agent{
 						if(Math.random() < getCourage())
 						{
 							System.out.println("Let's gamble ;)");
-							localMap.setLastMove(nextMove);
+							System.out.println("Move: " + nextMove);
 							this.move(nextMove);
 						}
 						else
 						{
-							localMap.setLastMove(Direction.NONE);
+							System.out.println("Move: " + nextMove);;
 							this.move(Direction.NONE);
 						}
 					}					

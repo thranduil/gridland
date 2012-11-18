@@ -188,7 +188,7 @@ public class Dispatcher implements Runnable {
 							System.err.println("Rescanning neighborhood...");
 							n = game.scanNeighborhood(neighborhoodSize, getAgent());
 						}
-						sendMessage(new NewMessage.StateMessage(getAgent().getDirection(), n, agent.hasFlag()).encodeMessage());
+						sendMessage(new NewMessage.StateMessage(xMessage.getDirection(), n, agent.hasFlag()).encodeMessage());
 					}
 					
 					return;

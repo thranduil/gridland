@@ -17,15 +17,12 @@ import agents.LocalMap;
 
 public class Map {
 
-	HashMap<Position, Integer> map = new HashMap<Position, Integer>();
+	private HashMap<Position, Integer> map = new HashMap<Position, Integer>();
 	
-	Position agentLocation = null;
-	Direction lastMove = Direction.NONE;
-	int agentId;
-	
-	//offsets : up, down, right, left
-	ArrayList<int[]> offsets = new ArrayList<int[]>(Arrays.asList(new int[]{0,-1}, new int[]{0,1}, new int[]{1,0}, new int[]{-1,0}));
-	
+	private Position agentLocation = null;
+	private Direction lastMove = Direction.NONE;
+	private int agentId;
+		
 	public static enum FindType { 
 		UNEXPLORED, FOOD, AGENT, HQ
 	}
@@ -36,24 +33,25 @@ public class Map {
 		agentId = id;
 	}
 	
-	public void updateMap(Neighborhood msg, boolean debug)
+	public void updateMap(StateMessage msg, boolean debug)
 	{	
+		lastMove = msg.direction;
 		if(debug)
 		{
-			printNeighborhood(msg);
+			printNeighborhood(msg.neighborhood);
 		}
 		
 		if(map.size() == 0)
 		{
 			//when map is empty add neighborhood to map like it was received
-			UpdateMapWithNeighborhood(msg, 0, 0);
+			UpdateMapWithNeighborhood(msg.neighborhood, 0, 0);
 		}
 		else
 		{
 			//if we already have elements in map do appropriate neighborhood shift			
-			int offset[] = getOffset(msg);
+			int offset[] = getOffset(msg.neighborhood);
 			
-			UpdateMapWithNeighborhood(msg, agentLocation.getX() + offset[0], agentLocation.getY() + offset[1]);	
+			UpdateMapWithNeighborhood(msg.neighborhood, agentLocation.getX() + offset[0], agentLocation.getY() + offset[1]);	
 		}		
 	}
 	
@@ -409,13 +407,7 @@ public class Map {
 		System.err.println("Path to (" + nextTarget.getX() + "," + nextTarget.getY() + ") was not found");
 		return resultPath;
 	}
-	
-	public void setLastMove(Direction d)
-	{
-		System.out.println("Move " + d);
-		lastMove = d;
-	}
-	
+		
 	public ArrayList<Integer> getFriendlyAgents(int radius)
 	{
 		ArrayList<Integer> agents = new ArrayList<Integer>();
