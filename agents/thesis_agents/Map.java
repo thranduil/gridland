@@ -253,8 +253,8 @@ public class Map {
 					continue;
 				}
 				
-				//if agent carry food, skip diagonal positions on 2 field
-				if(agentHasFood && ax + ay == 4)
+				//if agent carry food, skip positions that are more than 2 fields far
+				if(agentHasFood && ax + ay > 2)
 				{
 					continue;
 				}

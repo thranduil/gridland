@@ -28,6 +28,8 @@ public class DExplorer extends Agent{
 	private ConcurrentLinkedQueue<AgentsMessage> inbox;
 	private HashMap<Integer, Integer> communication;
 	
+	private int step;
+	
 	boolean debug = true;
 	Mode mode;
 	
@@ -46,6 +48,8 @@ public class DExplorer extends Agent{
 		inbox = new ConcurrentLinkedQueue<AgentsMessage>();
 		communication = new HashMap<Integer, Integer>();
 		mode = Mode.EXPLORE;
+		
+		step = 0;
 	}
 
 	@Override
@@ -68,7 +72,7 @@ public class DExplorer extends Agent{
 		
 		Position nextTarget = null;
 		while(isAlive())
-		{
+		{	
 			//process all received messages
 			while(!inbox.isEmpty())
 			{
@@ -77,7 +81,7 @@ public class DExplorer extends Agent{
 			
 			//process state if there is any
 			if(!states.isEmpty())
-			{
+			{	
 				//update local map with all received states
 				while(!states.isEmpty())
 				{
@@ -100,7 +104,7 @@ public class DExplorer extends Agent{
 				ArrayList<Integer> agents = localMap.getFriendlyAgents(1);
 				for(Integer a : agents)
 				{
-					send(a, localMap.getEncodedMap());
+					sendMessage(a);
 				}
 							
 				//finding next target field based on agent mode
@@ -185,6 +189,7 @@ public class DExplorer extends Agent{
 					{
 						System.out.println("Move: " + nextMove);
 						this.move(nextMove);
+						step++;
 					}
 					else
 					{
@@ -198,18 +203,6 @@ public class DExplorer extends Agent{
 	}
 	
 	/* Private methods */
-	
-	private double getCourage() {
-		switch(mode)
-		{
-		case HOMERUN:
-			return 0.6;
-		case NEARHQ:
-			return 0.5;
-		default:
-			return 0.3;
-		}
-	}
 
 	private void changeMode(Mode m)
 	{
@@ -218,6 +211,24 @@ public class DExplorer extends Agent{
 			System.out.println("Changing mode to " + m.toString());
 		}
 		mode = m;
+	}
+	
+	/**
+	 * Send message (local map) to an agent
+	 * It checks for time of last message that was sent
+	 * Only one message per one real move is allowed
+	 * 
+	 * @param agentId the agent id
+	 */
+	private void sendMessage(int agentId)
+	{
+		Integer msgStep = communication.get(agentId);
+		
+		if(msgStep == null || msgStep <= step - 1 )
+		{
+			send(agentId, localMap.getEncodedMap());
+			communication.put(agentId, step);
+		}
 	}
 
 }
