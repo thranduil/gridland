@@ -1,6 +1,7 @@
 package thesis_agents;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.grid.agent.Agent;
@@ -25,6 +26,7 @@ public class DExplorer extends Agent{
 	private ConcurrentLinkedQueue<StateMessage> states;
 	private ConcurrentLinkedQueue<Direction> plan;
 	private ConcurrentLinkedQueue<AgentsMessage> inbox;
+	private HashMap<Integer, Integer> communication;
 	
 	boolean debug = true;
 	Mode mode;
@@ -42,6 +44,7 @@ public class DExplorer extends Agent{
 		states = new ConcurrentLinkedQueue<StateMessage>();
 		plan = new ConcurrentLinkedQueue<Direction>();
 		inbox = new ConcurrentLinkedQueue<AgentsMessage>();
+		communication = new HashMap<Integer, Integer>();
 		mode = Mode.EXPLORE;
 	}
 
@@ -185,7 +188,7 @@ public class DExplorer extends Agent{
 					}
 					else
 					{
-						System.out.println("Move: NONE");;
+						System.out.println("Can't move to " + nextMove + ". Sending direction NONE.");;
 						this.move(Direction.NONE);
 					}					
 				}

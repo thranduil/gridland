@@ -260,7 +260,7 @@ public class Map {
 				}
 
 				
-				Position p = new Position(x,y);
+				Position p = new Position(n.getX() + x, n.getY() + y);
 				if(map.containsKey(p))
 				{
 					//agents (our or enemy) with lower id have priority
