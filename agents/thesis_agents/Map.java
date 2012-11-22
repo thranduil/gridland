@@ -38,6 +38,7 @@ public class Map {
 		lastMove = msg.direction;
 		if(debug)
 		{
+			System.out.println("Server move: " + msg.direction);
 			printNeighborhood(msg.neighborhood);
 		}
 		
@@ -107,6 +108,7 @@ public class Map {
 	
 	public void printLocalMap()
 	{
+		System.out.println("Agent id: " + agentId);
 		this.printMap(map);
 	}
 		
@@ -195,95 +197,28 @@ public class Map {
 		return position;
 	}
 	
-	public boolean canSafelyMove(Direction nextMove) {
+	public boolean canSafelyMove(Direction nextMove, boolean agentHasFood) {
 		Position n = null;
 		switch(nextMove)
 		{
 			case LEFT:
 			{
 				n = new Position(agentLocation.getX() - 1, agentLocation.getY());
-				if(!map.containsKey(n))
-				{
-					return true;
-				}
-				
-				Integer a = map.get(new Position(n.getX() - 1, n.getY()));
-				Integer b = map.get(new Position(n.getX(), n.getY() - 1));
-				Integer c = map.get(new Position(n.getX(), n.getY() + 1));
-				
-				//do not move there if on that spot can move enemy agent
-				if( (a != null && (a <= -6 || a > 0))
-					|| (b != null && (b <= -6 || b > 0))
-					|| (c != null && (c <= -6 || c > 0)))
-				{
-					return false;
-				}
 				break;
 			}
 			case DOWN:
 			{
 				n = new Position(agentLocation.getX(), agentLocation.getY() + 1);
-				if(!map.containsKey(n))
-				{
-					return true;
-				}
-				
-				Integer a = map.get(new Position(n.getX(), n.getY() + 1));
-				Integer b = map.get(new Position(n.getX() + 1, n.getY()));
-				Integer c = map.get(new Position(n.getX() - 1, n.getY()));
-				
-				//do not move there if on that spot can move enemy agent
-				if( (a != null && (a <= -6 || a > 0))
-						|| (b != null && (b <= -6 || b > 0))
-						|| (c != null && (c <= -6 || c > 0)))
-				{
-					return false;
-				}
-				
 				break;
 			}
 			case RIGHT:
 			{
 				n = new Position(agentLocation.getX() + 1, agentLocation.getY());
-				if(!map.containsKey(n))
-				{
-					return true;
-				}
-				
-				Integer a = map.get(new Position(n.getX() + 1, n.getY()));
-				Integer b = map.get(new Position(n.getX(), n.getY() - 1));
-				Integer c = map.get(new Position(n.getX(), n.getY() + 1));
-				
-				//do not move there if on that spot can move enemy agent
-				if( (a != null && (a <= -6 || a > 0))
-						|| (b != null && (b <= -6 || b > 0))
-						|| (c != null && (c <= -6 || c > 0)))
-				{
-					return false;
-				}
-				
 				break;
 			}
 			case UP:
 			{
 				n = new Position(agentLocation.getX(), agentLocation.getY() - 1);
-				if(!map.containsKey(n))
-				{
-					return true;
-				}
-				
-				Integer a = map.get(new Position(n.getX(), n.getY() - 1));
-				Integer b = map.get(new Position(n.getX() + 1, n.getY()));
-				Integer c = map.get(new Position(n.getX() - 1, n.getY()));
-				
-				//do not move there if on that spot can move enemy agent
-				if( (a != null && (a <= -6 || a > 0))
-						|| (b != null && (b <= -6 || b > 0))
-						|| (c != null && (c <= -6 || c > 0)))
-				{
-					return false;
-				}
-				
 				break;
 			}
 			case NONE:
@@ -292,15 +227,53 @@ public class Map {
 			}
 		}
 		
-		int title = map.get(n);
-		
-		//do not move if there is wall, enemy hq or other agent
-		if(title == -1 || title == -4 || title <= -6 || title > 0)
+		//agent can't move to field that are not empty,food or hq
+		if(map.containsKey(n) 
+				&& map.get(n) != 0 
+				&& map.get(n) != -2 
+				&& map.get(n) != -3 
+				&& map.get(n) != -5)
 		{
 			return false;
 		}
 		
-		return true;
+		boolean canMove = true;
+		
+		for(int x = -2; x <= 2; x++)
+		{
+			for(int y = -2; y<= 2; y++)
+			{
+				int ax = Math.abs(x);
+				int ay = Math.abs(y);
+				
+				//if agent doesn't carry food look only one field around target place
+				//and don't look diagonal positions
+				if(!agentHasFood && ( ax == 2 || ay == 2 || ax + ay == 2))
+				{
+					continue;
+				}
+				
+				//if agent carry food, skip diagonal positions on 2 field
+				if(agentHasFood && ax + ay == 4)
+				{
+					continue;
+				}
+
+				
+				Position p = new Position(x,y);
+				if(map.containsKey(p))
+				{
+					//agents (our or enemy) with lower id have priority
+					int id = Math.abs(map.get(p));
+					if( id > 6 &&  id < agentId)
+					{
+						canMove = false;
+					}
+				}
+			}
+		}
+		
+		return canMove;
 	}
 			
 	public LinkedList<Direction> dijkstraPlan(Position nextTarget) {

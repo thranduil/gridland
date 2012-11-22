@@ -178,24 +178,15 @@ public class DExplorer extends Agent{
 
 					//move agent if it can be safely moved or
 					//if this move is the last in plan (flag or hq)
-					if(plan.isEmpty() || localMap.canSafelyMove(nextMove))
+					if(plan.isEmpty() || localMap.canSafelyMove(nextMove, (mode == Mode.HOMERUN || mode == Mode.NEARHQ)))
 					{
 						System.out.println("Move: " + nextMove);
 						this.move(nextMove);
 					}
 					else
 					{
-						if(Math.random() < getCourage())
-						{
-							System.out.println("Let's gamble ;)");
-							System.out.println("Move: " + nextMove);
-							this.move(nextMove);
-						}
-						else
-						{
-							System.out.println("Move: " + nextMove);;
-							this.move(Direction.NONE);
-						}
+						System.out.println("Move: NONE");;
+						this.move(Direction.NONE);
 					}					
 				}
 			}
