@@ -2,7 +2,7 @@
 
 #Gameplay options
 #The speed of the gameplay (optional)
-gameplay.speed=100
+gameplay.speed=50
 #The arena file to load (required)
 gameplay.field=benchmark.field
 #The maximum number of agents per team (optional)
@@ -10,7 +10,7 @@ gameplay.agents=10
 #The number of timesteps between respawn phases (optional)
 gameplay.respawn=30
 
-gameplay.flags.pool = 80
+gameplay.flags.pool = 18
 
 #Gameplay mode
 gameplay.flags = BENCHMARK
@@ -25,5 +25,5 @@ message.size=1024000
 #Team id (required)
 team1=dExplorer
 #Team name (optional)
-
-team2=humans
+team2=aExplorer
+#team2=humans

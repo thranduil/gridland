@@ -79,8 +79,8 @@ public class Map {
 		for(Position p : receivedMap.keySet())
 		{
 			//skip my field
-			if((map.containsKey(p) && map.get(p) == agentId)
-				|| (receivedMap.get(p) == agentId))
+			if((p.getX() + offset.getX() == agentLocation.getX() && p.getY() + offset.getY() == agentLocation.getY()) 
+					|| receivedMap.get(p) == agentId)
 			{
 				continue;
 			}

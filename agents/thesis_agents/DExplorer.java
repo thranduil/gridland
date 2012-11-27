@@ -29,6 +29,7 @@ public class DExplorer extends Agent{
 	private HashMap<Integer, Integer> communication;
 	
 	private int step;
+	private int messageDistance = 3;
 	
 	boolean debug = true;
 	Mode mode;
@@ -37,7 +38,10 @@ public class DExplorer extends Agent{
 	
 	@Override
 	public void terminate() {
-		System.out.println("NOOOOO!");
+		if(debug)
+		{
+			System.out.println("I am dead!");
+		}
 	}
 
 	@Override
@@ -101,7 +105,7 @@ public class DExplorer extends Agent{
 				}
 				
 				//get all visible friendly agents
-				ArrayList<Integer> agents = localMap.getFriendlyAgents(1);
+				ArrayList<Integer> agents = localMap.getFriendlyAgents(messageDistance);
 				for(Integer a : agents)
 				{
 					sendMessage(a);
@@ -157,11 +161,18 @@ public class DExplorer extends Agent{
 				
 				//TODO: perform planning on other thread and here wait
 				//for specific limit and use old plan if computing takes too long
-				System.out.println("Target:" + nextTarget);
+				if(debug)
+				{
+					System.out.println("Target:" + nextTarget);
+				}
+				
 				plan = new ConcurrentLinkedQueue<Direction>(localMap.dijkstraPlan(nextTarget));
 				if(plan == null || plan.size() == 0)
 				{
-					System.out.println("Move: NONE");
+					if(debug)
+					{
+						System.out.println("Move: NONE");
+					}
 					this.move(Direction.NONE);
 					
 					//if food was found, but is not accessible
@@ -187,13 +198,19 @@ public class DExplorer extends Agent{
 					//if this move is the last in plan (flag or hq)
 					if(plan.isEmpty() || localMap.canSafelyMove(nextMove, (mode == Mode.HOMERUN || mode == Mode.NEARHQ)))
 					{
-						System.out.println("Move: " + nextMove);
+						if(debug)
+						{
+							System.out.println("Move: " + nextMove);
+						}
 						this.move(nextMove);
 						step++;
 					}
 					else
 					{
-						System.out.println("Can't move to " + nextMove + ". Sending direction NONE.");;
+						if(debug)
+						{
+							System.out.println("Can't move to " + nextMove + ". Sending direction NONE.");
+						}
 						this.move(Direction.NONE);
 					}					
 				}
