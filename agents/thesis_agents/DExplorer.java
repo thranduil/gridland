@@ -110,110 +110,68 @@ public class DExplorer extends Agent{
 				{
 					sendMessage(a);
 				}
-							
-				//finding next target field based on agent mode
-				switch(mode)
+				
+				int iteration = 0;
+				do
 				{
-					case FOODHUNT:
-					case EXPLORE:
-					{
-						nextTarget = localMap.findNearest(FindType.FOOD);
-						if(nextTarget != null)
+					//finding next target field based on agent mode					
+					nextTarget = findTarget(iteration);
+					
+					iteration ++;
+	
+					//compute next move based on nextTarget
+					
+					//TODO: perform planning on other thread and here wait
+					//for specific limit and use old plan if computing takes too long
+					
+					plan = new ConcurrentLinkedQueue<Direction>(localMap.dijkstraPlan(nextTarget));
+					
+					if(plan == null || plan.size() == 0)
+					{	
+						//if food was found, but is not accessible
+						//now search only for unexplored places
+						if(mode == Mode.FOODHUNT)
 						{
-							changeMode(Mode.FOODHUNT);
-						}
-						else
-						{
-							nextTarget = localMap.findNearest(FindType.UNEXPLORED);
-							
-							//No flags and no unexplored places found
-							if(nextTarget == null)
-							{
-								changeMode(Mode.HITMAN);
-							}
+							changeMode(Mode.ONLYEXPLORE);
 						}
 						
-						break;
+						//if path to hq can not be found 
+						//search for target point in vicinity of hq
+						if(mode == Mode.HOMERUN)
+						{
+							changeMode(Mode.NEARHQ);
+						}
+						
+						if(debug)
+						{
+							System.out.println("Next target will be chosen randomly among nearest");
+						}
 					}
-					case HITMAN:
-						break;
-					case HOMERUN:
-					{
-						nextTarget = localMap.findNearest(FindType.HQ);
-						break;
-					}
-					case NEARHQ:
-					{
-						nextTarget = localMap.findNearest(FindType.HQ);
-						nextTarget = localMap.findEmptyFieldNear(nextTarget, 2);
-						changeMode(Mode.HOMERUN);
-						break;
-					}
-					case ONLYEXPLORE:
-					{
-						nextTarget = localMap.findNearest(FindType.UNEXPLORED);
-						changeMode(Mode.EXPLORE);
-						break;
-					}
-				}
 				
-				//compute next move based on nextTarget
+				}while(plan.size() == 0);
 				
-				//TODO: perform planning on other thread and here wait
-				//for specific limit and use old plan if computing takes too long
-				if(debug)
-				{
-					System.out.println("Target:" + nextTarget);
-				}
-				
-				plan = new ConcurrentLinkedQueue<Direction>(localMap.dijkstraPlan(nextTarget));
-				if(plan == null || plan.size() == 0)
+				Direction nextMove = plan.poll();
+
+				//move agent if it can be safely moved or
+				//if this move is the last in plan (flag or hq)
+				if(plan.isEmpty() || localMap.canSafelyMove(nextMove, (mode == Mode.HOMERUN || mode == Mode.NEARHQ)))
 				{
 					if(debug)
 					{
-						System.out.println("Move: NONE");
+						System.out.println("Move: " + nextMove);
 					}
-					this.move(Direction.NONE);
-					
-					//if food was found, but is not accessible
-					//now search only for unexplored places
-					if(mode == Mode.FOODHUNT)
-					{
-						changeMode(Mode.ONLYEXPLORE);
-					}
-					
-					//if path to hq can not be found 
-					//search for target point in vicinity of hq
-					if(mode == Mode.HOMERUN)
-					{
-						changeMode(Mode.NEARHQ);
-					}
-					continue;
+					this.move(nextMove);
+					step++;
 				}
 				else
 				{
-					Direction nextMove = plan.poll();
-
-					//move agent if it can be safely moved or
-					//if this move is the last in plan (flag or hq)
-					if(plan.isEmpty() || localMap.canSafelyMove(nextMove, (mode == Mode.HOMERUN || mode == Mode.NEARHQ)))
+					if(debug)
 					{
-						if(debug)
-						{
-							System.out.println("Move: " + nextMove);
-						}
-						this.move(nextMove);
-						step++;
+						System.out.println("Can't move " + nextMove + ". Sending direction NONE.");
 					}
-					else
-					{
-						if(debug)
-						{
-							System.out.println("Can't move to " + nextMove + ". Sending direction NONE.");
-						}
-						this.move(Direction.NONE);
-					}					
-				}
+					this.move(Direction.NONE);
+				}					
+				
 			}
 		}
 		
@@ -246,6 +204,62 @@ public class DExplorer extends Agent{
 			send(agentId, localMap.getEncodedMap());
 			communication.put(agentId, step);
 		}
+	}
+	
+	private Position findTarget(int iteration)
+	{
+		Position nextTarget = null;
+		switch(mode)
+		{
+			case FOODHUNT:
+			case EXPLORE:
+			{
+				nextTarget = localMap.findNearest(FindType.FOOD, iteration);
+				if(nextTarget != null)
+				{
+					changeMode(Mode.FOODHUNT);
+				}
+				else
+				{
+					nextTarget = localMap.findNearest(FindType.UNEXPLORED, iteration);
+					
+					//No flags and no unexplored places found
+					if(nextTarget == null)
+					{
+						changeMode(Mode.HITMAN);
+					}
+				}
+				
+				break;
+			}
+			case HITMAN:
+				break;
+			case HOMERUN:
+			{
+				nextTarget = localMap.findNearest(FindType.HQ, iteration);
+				break;
+			}
+			case NEARHQ:
+			{
+				nextTarget = localMap.findNearest(FindType.HQ, 0);
+				nextTarget = localMap.findEmptyFieldNear(nextTarget, 2);
+				changeMode(Mode.HOMERUN);
+				break;
+			}
+			case ONLYEXPLORE:
+			{
+				nextTarget = localMap.findNearest(FindType.UNEXPLORED, iteration);
+				changeMode(Mode.EXPLORE);
+				break;
+			}
+		}
+		
+		if(debug)
+		{
+			System.out.println("Target:" + nextTarget);
+		}
+		
+		return nextTarget;
 	}
 
 }

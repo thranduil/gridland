@@ -112,9 +112,9 @@ public class Map {
 		this.printMap(map);
 	}
 		
-	public Position findNearest(FindType type)
+	public Position findNearest(FindType type, int priority)
 	{
-		Position nearest = null;
+		ArrayList<Position> nearest = new ArrayList<Position>();
 		
 		for(Position p : map.keySet())
 		{
@@ -154,17 +154,22 @@ public class Map {
 					break;
 			}
 			
-			//check if current position is nearest
+			//check if current position is nearest among the most near
 			if(satisfyCondition)
 			{
-				if(nearest == null || GetDistanceFromAgent(p) < GetDistanceFromAgent(nearest))
+				if(nearest.size() == 0 || GetDistanceFromAgent(p) <= GetDistanceFromAgent(nearest.get(0)))
 				{
-					nearest = p;
+					nearest.add(0, p);
 				}
 			}
 		}
 		
-		return nearest;
+		if(nearest.size() == 0)
+		{
+			return null;
+		}
+		
+		return nearest.size() > priority ? nearest.get(priority) : nearest.get(nearest.size() - 1);
 	}
 	
 	/**
