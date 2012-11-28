@@ -31,7 +31,7 @@ public class DExplorer extends Agent{
 	private int step;
 	private int messageDistance = 3;
 	
-	boolean debug = true;
+	boolean debug = false;
 	Mode mode;
 	
 	/* Overridden methods */

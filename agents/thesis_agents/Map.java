@@ -204,26 +204,52 @@ public class Map {
 	
 	public boolean canSafelyMove(Direction nextMove, boolean agentHasFood) {
 		Position n = null;
+		
+		//get next Position and get positions to check for enemies (n1,n2,n3)
+		Position n1 = null;
+		Position n2 = null;
+		Position n3 = null;
+		
 		switch(nextMove)
 		{
 			case LEFT:
 			{
 				n = new Position(agentLocation.getX() - 1, agentLocation.getY());
+				
+				n1 = new Position(n.getX(), n.getY() + 1);
+				n2 = new Position(n.getX(), n.getY() - 1);
+				n3 = new Position(n.getX() - 1, n.getY());
+				
 				break;
 			}
 			case DOWN:
 			{
 				n = new Position(agentLocation.getX(), agentLocation.getY() + 1);
+				
+				n1 = new Position(n.getX() + 1, n.getY());
+				n2 = new Position(n.getX() - 1, n.getY());
+				n3 = new Position(n.getX(), n.getY() + 1);
+				
 				break;
 			}
 			case RIGHT:
 			{
 				n = new Position(agentLocation.getX() + 1, agentLocation.getY());
+				
+				n1 = new Position(n.getX(), n.getY() + 1);
+				n2 = new Position(n.getX(), n.getY() - 1);
+				n3 = new Position(n.getX() + 1, n.getY());
+				
 				break;
 			}
 			case UP:
 			{
 				n = new Position(agentLocation.getX(), agentLocation.getY() - 1);
+				
+				n1 = new Position(n.getX() + 1, n.getY());
+				n2 = new Position(n.getX() - 1, n.getY());
+				n3 = new Position(n.getX(), n.getY() - 1);
+				
 				break;
 			}
 			case NONE:
@@ -234,12 +260,24 @@ public class Map {
 		
 		//agent can't move to field that are not empty,food or hq
 		if(map.containsKey(n) 
-				&& map.get(n) != 0 
-				&& map.get(n) != -2 
-				&& map.get(n) != -3 
-				&& map.get(n) != -5)
+				&& map.get(n) != 0		//empty
+				&& map.get(n) != -2 	//hq
+				&& map.get(n) != -3 	//food
+				&& map.get(n) != -5)	//food
 		{
 			return false;
+		}
+		
+		//check if in near fields are enemy agents
+		if(map.containsKey(n1) && map.get(n1) == -6
+				|| map.containsKey(n2) && map.get(n2) == -6
+				|| map.containsKey(n3) && map.get(n3) == -6)
+		{
+			if(Math.random() > 0.1)
+			{
+				//don't move if enemy agent is in field near in 90%
+				return false;
+			}
 		}
 		
 		boolean canMove = true;
@@ -268,9 +306,9 @@ public class Map {
 				Position p = new Position(n.getX() + x, n.getY() + y);
 				if(map.containsKey(p))
 				{
-					//agents (our or enemy) with lower id have priority
-					int id = Math.abs(map.get(p));
-					if( id > 6 &&  id < agentId)
+					//agents with lower id have priority
+					int id = map.get(p);
+					if( id > 0 &&  id < agentId)
 					{
 						canMove = false;
 					}
