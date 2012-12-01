@@ -4,7 +4,7 @@
 #The speed of the gameplay (optional)
 gameplay.speed=50
 #The arena file to load (required)
-gameplay.field=benchmark.field
+gameplay.field=benchmark1.field
 #The maximum number of agents per team (optional)
 gameplay.agents=10
 #The number of timesteps between respawn phases (optional)
