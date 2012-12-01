@@ -31,7 +31,7 @@ public class DExplorer extends Agent{
 	private int step;
 	private int messageDistance = 3;
 	
-	boolean debug = false;
+	boolean debug = true;
 	Mode mode;
 	
 	/* Overridden methods */
@@ -117,6 +117,8 @@ public class DExplorer extends Agent{
 					//finding next target field based on agent mode					
 					nextTarget = findTarget(iteration);
 					
+					System.out.println(iteration);
+					
 					iteration ++;
 	
 					//compute next move based on nextTarget
@@ -148,13 +150,13 @@ public class DExplorer extends Agent{
 						}
 					}
 				
-				}while(plan.size() == 0);
+				}while(plan.size() == 0 && iteration < 10);
 				
 				Direction nextMove = plan.poll();
 
 				//move agent if it can be safely moved or
 				//if this move is the last in plan (flag or hq)
-				if(plan.isEmpty() || localMap.canSafelyMove(nextMove, (mode == Mode.HOMERUN || mode == Mode.NEARHQ)))
+				if(iteration < 10 && (plan.isEmpty() || localMap.canSafelyMove(nextMove, (mode == Mode.HOMERUN || mode == Mode.NEARHQ))))
 				{
 					if(debug)
 					{
@@ -233,6 +235,8 @@ public class DExplorer extends Agent{
 				break;
 			}
 			case HITMAN:
+				localMap.clearMap();
+				changeMode(Mode.EXPLORE);
 				break;
 			case HOMERUN:
 			{

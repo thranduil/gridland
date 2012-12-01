@@ -33,6 +33,11 @@ public class Map {
 		agentId = id;
 	}
 	
+	public void clearMap()
+	{
+		map.clear();
+	}
+	
 	public void updateMap(StateMessage msg, boolean debug)
 	{	
 		lastMove = msg.direction;
@@ -277,6 +282,10 @@ public class Map {
 			{
 				//don't move if enemy agent is in field near in 90%
 				return false;
+			}
+			else
+			{
+				System.out.println("I shouldn't move, but i will.");
 			}
 		}
 		
@@ -634,9 +643,9 @@ public class Map {
 	
 	private void printMap(HashMap<Position, Integer> map)
 	{
-		for(int y = -10; y <= 10; y++)
+		for(int y = -40; y <= 1; y++)
 		{
-			for(int x = -10; x <= 10; x++)
+			for(int x = -40; x <= 1; x++)
 			{ 
 				Position pos = new Position(x, y);
 				int a = 1;
