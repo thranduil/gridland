@@ -17,7 +17,7 @@ import thesis_agents.Map.FindType;
 public class DExplorer extends Agent{
 
 	private static enum Mode {
-		EXPLORE, HOMERUN, HITMAN, FOODHUNT, ONLYEXPLORE, NEARHQ
+		EXPLORE, HOMERUN, REBOOT, FOODHUNT, ONLYEXPLORE, NEARHQ
 	}
 	
 	/* Private variables */
@@ -31,7 +31,7 @@ public class DExplorer extends Agent{
 	private int step;
 	private int messageDistance = 3;
 	
-	boolean debug = true;
+	boolean debug = false;
 	Mode mode;
 	
 	/* Overridden methods */
@@ -51,8 +51,8 @@ public class DExplorer extends Agent{
 		plan = new ConcurrentLinkedQueue<Direction>();
 		inbox = new ConcurrentLinkedQueue<AgentsMessage>();
 		communication = new HashMap<Integer, Integer>();
-		mode = Mode.EXPLORE;
 		
+		mode = Mode.EXPLORE;
 		step = 0;
 	}
 
@@ -124,7 +124,7 @@ public class DExplorer extends Agent{
 					//TODO: perform planning on other thread and here wait
 					//for specific limit and use old plan if computing takes too long
 					
-					plan = new ConcurrentLinkedQueue<Direction>(localMap.dijkstraPlan(nextTarget));
+					plan = new ConcurrentLinkedQueue<Direction>(localMap.dijkstraPlan(nextTarget, mode == Mode.HOMERUN || mode == Mode.NEARHQ));
 					
 					if(plan == null || plan.size() == 0)
 					{	
@@ -149,9 +149,9 @@ public class DExplorer extends Agent{
 					}
 				
 				}while(plan.size() == 0 && iteration < 10);
-				
-				Direction nextMove = plan.poll();
 
+				Direction nextMove = plan.poll();
+				
 				//move agent if it can be safely moved or
 				//if this move is the last in plan (flag or hq)
 				if(iteration < 10 && (plan.isEmpty() || localMap.canSafelyMove(nextMove, (mode == Mode.HOMERUN || mode == Mode.NEARHQ))))
@@ -226,13 +226,13 @@ public class DExplorer extends Agent{
 					//No flags and no unexplored places found
 					if(nextTarget == null)
 					{
-						changeMode(Mode.HITMAN);
+						changeMode(Mode.REBOOT);
 					}
 				}
 				
 				break;
 			}
-			case HITMAN:
+			case REBOOT:
 				localMap.clearMap();
 				changeMode(Mode.EXPLORE);
 				break;

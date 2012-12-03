@@ -363,7 +363,7 @@ public class Dispatcher implements Runnable {
 	
 	private Game game;
 	
-	private int maxMessageSize = 1024;
+	private int maxMessageSize = 2048;
 	
 	private int neighborhoodSize = 5;	
 	

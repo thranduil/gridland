@@ -46,7 +46,7 @@ public class Map {
 	public void clearMap()
 	{
 		HashMap<Position, Integer> newMap = (HashMap<Position, Integer>) map.clone();
-		dijkstraPlan(findNearest(FindType.HQ, 0));
+		dijkstraPlan(findNearest(FindType.HQ, 0), true);
 		
 		for(Position p : map.keySet())
 		{
@@ -425,7 +425,7 @@ public class Map {
 		return canMove;
 	}
 			
-	public LinkedList<Direction> dijkstraPlan(Position nextTarget) {
+	public LinkedList<Direction> dijkstraPlan(Position nextTarget, boolean returnToHQ) {
 		
 		HashMap<Position, Position> previous = new HashMap<Position, Position>();
 		HashMap<Position, Integer> distances = new HashMap<Position, Integer>();
@@ -434,13 +434,6 @@ public class Map {
 		if(nextTarget == null)
 		{
 			return resultPath;
-		}
-		
-		//find out if target field is HQ 
-		boolean returnToHQ = false;
-		if(map.get(nextTarget) == -2)
-		{
-			returnToHQ = true;
 		}
 		
 		//add all map fields to list with distance set to max

@@ -662,12 +662,15 @@ public class Game {
 
 		if (cltto != null && cltfrom != null) {
 
-			int dst = distance(cltfrom.getAgent(), cltto.getAgent());
-			if (dst > neighborhoodSize || dst < 0) {
-				Main.log(
-						"Message from %d to %d rejected: too far away", from,
-						to);
-				return;
+			if(flagMode != FlagMode.BENCHMARK)
+			{
+				int dst = distance(cltfrom.getAgent(), cltto.getAgent());
+				if (dst > neighborhoodSize || dst < 0) {
+					Main.log(
+							"Message from %d to %d rejected: too far away", from,
+							to);
+					return;
+				}
 			}
 			
 			cltfrom.getAgent().pushMessage(to, message, flagMode == FlagMode.BENCHMARK ? 1 : message.length / messageSpeed);
