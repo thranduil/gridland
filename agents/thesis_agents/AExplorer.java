@@ -31,7 +31,7 @@ public class AExplorer extends Agent{
 	private int step;
 	private int messageDistance = 3;
 	
-	boolean debug = false;
+	boolean debug = true;
 	Mode mode;
 	
 	/* Overridden methods */
@@ -46,7 +46,7 @@ public class AExplorer extends Agent{
 
 	@Override
 	public void initialize() {
-		localMap = new Map(getId());
+		localMap = new Map(getId(), debug);
 		states = new ConcurrentLinkedQueue<StateMessage>();
 		plan = new ConcurrentLinkedQueue<Direction>();
 		inbox = new ConcurrentLinkedQueue<AgentsMessage>();
@@ -80,7 +80,7 @@ public class AExplorer extends Agent{
 			//process all received messages
 			while(!inbox.isEmpty())
 			{
-				localMap.updateMap(inbox.poll(), debug);
+				localMap.updateMap(inbox.poll());
 			}
 			
 			//process state if there is any
@@ -95,7 +95,7 @@ public class AExplorer extends Agent{
 						changeMode(Mode.HOMERUN);
 					}
 					
-					localMap.updateMap(msg, debug);
+					localMap.updateMap(msg);
 					
 					if(debug)
 					{
@@ -148,13 +148,13 @@ public class AExplorer extends Agent{
 						}
 					}
 				
-				}while(plan.size() == 0);
+				}while(plan.size() == 0 && iteration < 10);
 				
 				Direction nextMove = plan.poll();
 
 				//move agent if it can be safely moved or
 				//if this move is the last in plan (flag or hq)
-				if(plan.isEmpty() || localMap.canSafelyMove(nextMove, (mode == Mode.HOMERUN || mode == Mode.NEARHQ)))
+				if(iteration < 10 && (plan.isEmpty() || localMap.canSafelyMove(nextMove, (mode == Mode.HOMERUN || mode == Mode.NEARHQ))))
 				{
 					if(debug)
 					{
@@ -251,7 +251,12 @@ public class AExplorer extends Agent{
 			case ONLYEXPLORE:
 			{
 				nextTarget = localMap.findNearest(FindType.UNEXPLORED, iteration);
-				changeMode(Mode.EXPLORE);
+				if(iteration == 0)
+				{
+					//change mode back to explore only if this is first iteration
+					//otherwise we could have a lock (FOOD->ONLYEXPLORE->EXPLORE->FOOD)
+					changeMode(Mode.EXPLORE);
+				}
 				break;
 			}
 		}

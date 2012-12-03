@@ -18,28 +18,50 @@ import agents.LocalMap;
 public class Map {
 
 	private HashMap<Position, Integer> map = new HashMap<Position, Integer>();
+	private HashMap<Integer, Integer> agentsTTL = new HashMap<Integer, Integer>();
 	
 	private Position agentLocation = null;
 	private Direction lastMove = Direction.NONE;
 	private int agentId;
+	
+	//path with positions of last path search
+	private ArrayList<Position> currentPath = new ArrayList<Position>();
+	
+	private boolean debug;
+	
+	private final int TTL = 5;
 		
 	public static enum FindType { 
 		UNEXPLORED, FOOD, AGENT, HQ
 	}
 	
-	
-	public Map(int id)
+	public Map(int id, boolean debug)
 	{
 		agentId = id;
+		this.debug = debug;
 	}
-	
+	/**
+	 * Clears map but leaves one path to HQ intact
+	 */
 	public void clearMap()
 	{
-		map.clear();
+		HashMap<Position, Integer> newMap = (HashMap<Position, Integer>) map.clone();
+		dijkstraPlan(findNearest(FindType.HQ, 0));
+		
+		for(Position p : map.keySet())
+		{
+			if(!currentPath.contains(p))
+			{
+				newMap.remove(p);
+			}
+		}
+		map = newMap;
 	}
 	
-	public void updateMap(StateMessage msg, boolean debug)
+	public void updateMap(StateMessage msg)
 	{	
+		AgentsTTLCheck();
+		
 		lastMove = msg.direction;
 		if(debug)
 		{
@@ -61,7 +83,50 @@ public class Map {
 		}		
 	}
 	
-	public void updateMap(AgentsMessage msg, boolean debug)
+	/**
+	 * Decrease TTL for each agent,
+	 * remove invalid (TTL = 0) agents and
+	 * update map
+	 */
+	private void AgentsTTLCheck() {
+		ArrayList<Integer> agentsForRemoval = new ArrayList<Integer>();
+		//decrease counter and mark agents
+		for(Integer agentId : agentsTTL.keySet())
+		{
+			if(agentsTTL.get(agentId) == 1)
+			{
+				agentsForRemoval.add(agentId);
+				continue;
+			}
+			agentsTTL.put(agentId, agentsTTL.get(agentId) - 1);	
+		}
+		
+		//remove agents from ttl list
+		for(Integer id : agentsForRemoval)
+		{
+			agentsTTL.remove(id);
+			
+			if(debug)
+			{
+				System.out.println("Removed agent " + id);
+			}
+		}
+		
+		//remove agents from map
+		if(!agentsForRemoval.isEmpty())
+		{
+			for(Position p : map.keySet())
+			{
+				Integer field = map.get(p);
+				if(agentsForRemoval.contains(field))
+				{
+					map.put(p, 0);
+				}
+			}
+		}
+	}
+
+	public void updateMap(AgentsMessage msg)
 	{
 		//do not process agents msg if we don't have
 		//local map filled
@@ -90,6 +155,12 @@ public class Map {
 				continue;
 			}
 			
+			//set agent ttl to max
+			if(receivedMap.get(p) > 0)
+			{
+				agentsTTL.put(receivedMap.get(p), TTL);
+			}
+			
 			//update all fields
 			map.put(new Position(p.getX() + offset.getX(), p.getY() + offset.getY()), receivedMap.get(p));
 		}
@@ -106,6 +177,14 @@ public class Map {
 		StringBuilder sb = new StringBuilder();
 		for(Position p : map.keySet())
 		{
+			Integer field = map.get(p);
+			
+			//send only agents that are still in our neighborhood(of size 5 fields)
+			if((field == -6 || field > 0) && GetDistanceFromAgent(p) > 5)
+			{
+				continue;
+			}
+			
 			sb.append(p.getX()+","+p.getY()+","+map.get(p)+";");
 		}
 		return sb.toString().getBytes();
@@ -119,7 +198,7 @@ public class Map {
 		
 	public Position findNearest(FindType type, int priority)
 	{
-		ArrayList<Position> nearest = new ArrayList<Position>();
+		HashMap<Integer, Position> distanceToField = new HashMap<Integer, Position>();
 		
 		for(Position p : map.keySet())
 		{
@@ -162,19 +241,37 @@ public class Map {
 			//check if current position is nearest among the most near
 			if(satisfyCondition)
 			{
-				if(nearest.size() == 0 || GetDistanceFromAgent(p) <= GetDistanceFromAgent(nearest.get(0)))
-				{
-					nearest.add(0, p);
-				}
+				distanceToField.put(GetDistanceFromAgent(p), p);
 			}
 		}
 		
-		if(nearest.size() == 0)
+		if(distanceToField.isEmpty())
 		{
 			return null;
 		}
 		
-		return nearest.size() > priority ? nearest.get(priority) : nearest.get(nearest.size() - 1);
+		Position result = null;
+		
+		//check distances from 1 to 100 and return smallest
+		//priority indicates how many elements we skip
+		for(int i = 1; i < 100; i++)
+		{
+			if(distanceToField.containsKey(i))
+			{
+				result = distanceToField.get(i);
+				
+				if(priority == 0)
+				{
+					break;
+				}
+				else
+				{
+					priority--;
+				}
+			}
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -380,6 +477,7 @@ public class Map {
 				while(previous.get(node) != null)
 				{
 					resultPath.addFirst(getDirectionFrom(previous.get(node), node));
+					currentPath.add(node);
 					node = previous.get(node);
 				}
 				return resultPath;
@@ -429,7 +527,10 @@ public class Map {
 				}
 			}
 		}
-		System.err.println("Path to (" + nextTarget.getX() + "," + nextTarget.getY() + ") was not found");
+		if(debug)
+		{
+			System.err.println("Path to (" + nextTarget.getX() + "," + nextTarget.getY() + ") was not found");
+		}
 		return resultPath;
 	}
 		
@@ -457,7 +558,7 @@ public class Map {
 		return agents;
 	}
 	
-	private double GetDistanceFromAgent(Position p)
+	private int GetDistanceFromAgent(Position p)
 	{		
 		return Math.abs(agentLocation.getX() - p.getX()) + Math.abs(agentLocation.getY() - p.getY());
 	}
@@ -486,54 +587,6 @@ public class Map {
 		}
 		
 		return offset;
-		
-		/*
-		boolean aligned = true;
-		
-		int xStart = (offset[0] == -1 ) ? -n.getSize() + 1 : -n.getSize();
-		int xEnd = (offset[0] == 1) ? n.getSize() - 1 : n.getSize();
-		int yStart = (offset[1] == -1 ) ? -n.getSize() + 1 : -n.getSize();
-		int yEnd = (offset[1] == 1) ? n.getSize() -1 : n.getSize();
-		
-		for(int y = yStart; y <= yEnd; y++)
-		{
-			for(int x = xStart; x <= xEnd; x++)
-			{
-				int current = n.getCell(x, y);
-				
-				//check only wall, empty space or hq
-				if(current == 0 || current == -1 || current == -2 || current == -4)
-				{
-					int local = map.get(new Position(x + agentLocation.getX() + offset[0], y + agentLocation.getY() + offset[1] ));
-					
-					//skip agents
-					if(local > 0) continue;
-					
-					if(current != local)
-					{
-						aligned = false;
-						break;
-					}
-				}
-			}
-			if(aligned == false)
-			{
-				break;
-			}
-		}
-		
-		if(aligned)
-		{
-			return offset;
-		}
-		
-		System.err.println("\nOffset for neighborhood can not be found.");
-		System.out.println("Last move:" + lastMove);
-		printNeighborhood(n);
-		System.out.println("Local map");
-		printLocalMap();
-		return new int[]{0,0};	
-		*/	
 	}
 	
 	private Position getOffsetForReceivedMap(HashMap<Position, Integer> receivedMap)
@@ -586,6 +639,10 @@ public class Map {
 				if(field == agentId)
 				{
 					agentLocation = pos;
+				}
+				else if(field > 0)
+				{
+					agentsTTL.put(field, TTL);
 				}
 			}
 		}

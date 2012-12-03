@@ -46,7 +46,7 @@ public class DExplorer extends Agent{
 
 	@Override
 	public void initialize() {
-		localMap = new Map(getId());
+		localMap = new Map(getId(), debug);
 		states = new ConcurrentLinkedQueue<StateMessage>();
 		plan = new ConcurrentLinkedQueue<Direction>();
 		inbox = new ConcurrentLinkedQueue<AgentsMessage>();
@@ -80,7 +80,7 @@ public class DExplorer extends Agent{
 			//process all received messages
 			while(!inbox.isEmpty())
 			{
-				localMap.updateMap(inbox.poll(), debug);
+				localMap.updateMap(inbox.poll());
 			}
 			
 			//process state if there is any
@@ -95,7 +95,7 @@ public class DExplorer extends Agent{
 						changeMode(Mode.HOMERUN);
 					}
 					
-					localMap.updateMap(msg, debug);
+					localMap.updateMap(msg);
 					
 					if(debug)
 					{
@@ -116,8 +116,6 @@ public class DExplorer extends Agent{
 				{
 					//finding next target field based on agent mode					
 					nextTarget = findTarget(iteration);
-					
-					System.out.println(iteration);
 					
 					iteration ++;
 	
@@ -253,7 +251,12 @@ public class DExplorer extends Agent{
 			case ONLYEXPLORE:
 			{
 				nextTarget = localMap.findNearest(FindType.UNEXPLORED, iteration);
-				changeMode(Mode.EXPLORE);
+				if(iteration == 0)
+				{
+					//change mode back to explore only if this is first iteration
+					//otherwise we could have a lock (FOOD->ONLYEXPLORE->EXPLORE->FOOD)
+					changeMode(Mode.EXPLORE);
+				}
 				break;
 			}
 		}
