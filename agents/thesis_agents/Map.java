@@ -1,20 +1,14 @@
 package thesis_agents;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.grid.protocol.Neighborhood;
 import org.grid.protocol.NewMessage.Direction;
 import org.grid.protocol.Position;
-
-import agents.LocalMap;
 
 public class Map {
 
@@ -49,7 +43,7 @@ public class Map {
 	public void clearMap()
 	{
 		HashMap<Position, Integer> newMap = (HashMap<Position, Integer>) map.clone();
-		dijkstraPlan(findNearest(FindType.HQ, 0), true);
+		aStarPlan(findNearest(FindType.HQ, 0), true);
 		
 		for(Position p : map.keySet())
 		{
@@ -385,7 +379,7 @@ public class Map {
 				//don't move if enemy agent is in field near in 90%
 				return false;
 			}
-			else
+			else if(debug)
 			{
 				System.out.println("I shouldn't move, but i will.");
 			}
@@ -594,7 +588,7 @@ public class Map {
 		{
 			System.err.println("Path to (" + nextTarget.getX() + "," + nextTarget.getY() + ") was not found");
 		}
-		return null;	
+		return result;	
 	}
 	
 	public ArrayList<Integer> getFriendlyAgents(int radius)

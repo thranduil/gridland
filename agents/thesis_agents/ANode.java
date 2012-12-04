@@ -4,6 +4,8 @@ import org.grid.protocol.Position;
 
 public class ANode extends Position implements Comparable<ANode> {
 
+	private static final long serialVersionUID = 1L;
+	
 	int cost;
 	
 	public ANode(int x, int y, int cost) {
