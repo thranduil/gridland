@@ -124,7 +124,8 @@ public class DExplorer extends Agent{
 					//TODO: perform planning on other thread and here wait
 					//for specific limit and use old plan if computing takes too long
 					
-					plan = new ConcurrentLinkedQueue<Direction>(localMap.dijkstraPlan(nextTarget, mode == Mode.HOMERUN || mode == Mode.NEARHQ));
+					//plan = new ConcurrentLinkedQueue<Direction>(localMap.dijkstraPlan(nextTarget, mode == Mode.HOMERUN || mode == Mode.NEARHQ));
+					plan = new ConcurrentLinkedQueue<Direction>(localMap.aStarPlan(nextTarget, mode == Mode.HOMERUN || mode == Mode.NEARHQ));
 					
 					if(plan == null || plan.size() == 0)
 					{	

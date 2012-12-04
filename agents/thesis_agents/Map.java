@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -30,7 +31,8 @@ public class Map {
 	private boolean debug;
 	
 	private final int TTL = 5;
-		
+	
+	
 	public static enum FindType { 
 		UNEXPLORED, FOOD, AGENT, HQ
 	}
@@ -40,6 +42,7 @@ public class Map {
 		agentId = id;
 		this.debug = debug;
 	}
+	
 	/**
 	 * Clears map but leaves one path to HQ intact
 	 */
@@ -274,6 +277,7 @@ public class Map {
 		return result;
 	}
 	
+	
 	/**
 	 * Find empty field near given position near.
 	 *
@@ -303,6 +307,7 @@ public class Map {
 
 		return position;
 	}
+	
 	
 	public boolean canSafelyMove(Direction nextMove, boolean agentHasFood) {
 		Position n = null;
@@ -526,7 +531,72 @@ public class Map {
 		}
 		return resultPath;
 	}
+	
+	public LinkedList<Direction> aStarPlan(Position nextTarget, boolean returnToHQ)
+	{
+		LinkedList<Direction> result = new LinkedList<Direction>();
 		
+		if(nextTarget == null)
+		{
+			return result;
+		}
+		
+		PriorityQueue<ANode> openSet = new PriorityQueue<ANode>();
+		HashSet<Position> closedSet = new HashSet<Position>();
+		HashMap<Position, Integer> gScore = new HashMap<Position, Integer>();
+		HashMap<Position, Position> cameFrom = new HashMap<Position, Position>();
+		
+		openSet.add(new ANode(agentLocation, GetManhattanDistance(agentLocation, nextTarget)));
+		gScore.put(agentLocation, 0);
+		
+		while(!openSet.isEmpty())
+		{
+			ANode current = openSet.poll();
+			
+			if(current.getPosition().equals(nextTarget))
+			{
+				ArrayList<Position> path = new ArrayList<Position>();
+				
+				Position p = current.getPosition();
+				while(cameFrom.containsKey(p))
+				{
+					result.addFirst(getDirectionFrom(cameFrom.get(p), p));
+					path.add(p);
+					p = cameFrom.get(p);
+				}
+				return result;
+			}
+			
+			closedSet.add(current.getPosition());
+			
+			for(Position neighbor : getNeighborNodes(current, returnToHQ))
+			{
+				if(closedSet.contains(neighbor))
+				{
+					continue;
+				}
+				
+				int newGScore = gScore.get(current.getPosition()) + 1;
+				
+				if(!openSet.contains(neighbor) || (gScore.containsKey(neighbor) && newGScore <= gScore.get(neighbor)))
+				{
+					cameFrom.put(neighbor, current.getPosition());
+					gScore.put(neighbor, newGScore);
+					
+					//remove it if exist and then add it
+					openSet.remove(new ANode(neighbor, 100));
+					openSet.add(new ANode(neighbor, newGScore + GetManhattanDistance(neighbor, nextTarget)));
+				}
+			}
+		}
+		
+		if(debug)
+		{
+			System.err.println("Path to (" + nextTarget.getX() + "," + nextTarget.getY() + ") was not found");
+		}
+		return null;	
+	}
+	
 	public ArrayList<Integer> getFriendlyAgents(int radius)
 	{
 		ArrayList<Integer> agents = new ArrayList<Integer>();
@@ -551,9 +621,15 @@ public class Map {
 		return agents;
 	}
 	
+	
 	private int GetDistanceFromAgent(Position p)
 	{		
-		return Math.abs(agentLocation.getX() - p.getX()) + Math.abs(agentLocation.getY() - p.getY());
+		return GetManhattanDistance(agentLocation, p);
+	}
+	
+	private int GetManhattanDistance(Position p1, Position p2)
+	{
+		return Math.abs(p1.getX() - p2.getX()) + Math.abs(p1.getY() - p2.getY());
 	}
 	
 	private int[] getOffset(Neighborhood n)
@@ -691,6 +767,38 @@ public class Map {
 		return false;
 	}
 	
+	/**
+	 * Returns neighbor nodes(Positions)
+	 * that are empty or (depending on includeHQ) are food/hq
+	 */
+	private ArrayList<Position> getNeighborNodes(ANode current, boolean includeHQ) {
+		ArrayList<Position> result = new ArrayList<Position>();
+		
+		Position left = current.getPositionWithOffset(-1, 0);
+		Position right = current.getPositionWithOffset(1, 0);
+		Position up = current.getPositionWithOffset(0, -1);
+		Position down = current.getPositionWithOffset(0, 1);
+		
+		if(canMove(left, includeHQ))
+		{
+			result.add(left);
+		}
+		if(canMove(right, includeHQ))
+		{
+			result.add(right);
+		}
+		if(canMove(up, includeHQ))
+		{
+			result.add(up);
+		}
+		if(canMove(down, includeHQ))
+		{
+			result.add(down);
+		}
+		
+		return result;
+	}
+	
 	private void printMap(HashMap<Position, Integer> map)
 	{
 		for(int y = -40; y <= 1; y++)
@@ -754,5 +862,3 @@ public class Map {
 		}
 	}
 }
-
-
