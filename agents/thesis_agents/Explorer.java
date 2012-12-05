@@ -16,7 +16,7 @@ import thesis_agents.Map.FindType;
 public abstract class Explorer extends Agent{
 
 	private static enum Mode {
-		EXPLORE, HOMERUN, REBOOT, FOODHUNT, ONLYEXPLORE, NEARHQ
+		EXPLORE, HOMERUN, REBOOT, FOODHUNT, ONLYEXPLORE, NEARHQ, HITMAN
 	}
 	
 	/* Private variables */
@@ -29,20 +29,28 @@ public abstract class Explorer extends Agent{
 	
 	private int step;
 	
-	boolean debug = false;
+	boolean debug = true;
 	Mode mode;
 	
 
 	/**
 	 * Returns plan to target position
 	 */
-	abstract ConcurrentLinkedQueue<Direction> getPlan(Position target, boolean includeHQ);
+	abstract ConcurrentLinkedQueue<Direction> getPlan(Position target, boolean includeHQ, boolean includeEnemyAgent);
 	
 	/**
 	 * Gets radius in which we send messages to other agents
 	 * @return radius
 	 */
 	abstract int getMessageRadius();
+	
+	/**
+	 * Check if we can kill enemy agent
+	 * Note that getting food is still top priority, then is killing and after that exploration
+	 * 
+	 * @return true if we can kill enemy agent
+	 */
+	abstract boolean isKillingEnabled();
 	
 	
 	/* Overridden methods */
@@ -140,7 +148,7 @@ public abstract class Explorer extends Agent{
 					//TODO: perform planning on other thread and here wait
 					//for specific limit and use old plan if computing takes too long
 					
-					plan = getPlan(nextTarget, mode == Mode.HOMERUN || mode == Mode.NEARHQ);
+					plan = getPlan(nextTarget, mode == Mode.HOMERUN || mode == Mode.NEARHQ, mode == Mode.HITMAN);
 					
 					if(plan == null || plan.size() == 0)
 					{	
@@ -170,7 +178,7 @@ public abstract class Explorer extends Agent{
 				
 				//move agent if it can be safely moved or
 				//if this move is the last in plan (flag or hq)
-				if(iteration < 10 && (plan.isEmpty() || localMap.canSafelyMove(nextMove, (mode == Mode.HOMERUN || mode == Mode.NEARHQ))))
+				if(iteration < 10 && (plan.isEmpty() || localMap.canSafelyMove(nextMove, (mode == Mode.HOMERUN || mode == Mode.NEARHQ), mode == Mode.HITMAN)))
 				{
 					if(debug)
 					{
@@ -237,13 +245,28 @@ public abstract class Explorer extends Agent{
 				}
 				else
 				{
-					nextTarget = localMap.findNearest(FindType.UNEXPLORED, iteration);
+					nextTarget = localMap.getNearbyEnemyAgent(5);
 					
-					//No flags and no unexplored places found
+					//if killing is not enabled delete nextTarget
+					if(nextTarget != null && !isKillingEnabled())
+					{
+						nextTarget = null;
+					}
+					
 					if(nextTarget == null)
 					{
-						changeMode(Mode.REBOOT);
+						nextTarget = localMap.findNearest(FindType.UNEXPLORED, iteration);
+						
+						//No flags, no unexplored places and no enemy agents found
+						if(nextTarget == null)
+						{
+							changeMode(Mode.REBOOT);
+						}
 					}
+					else
+					{
+						changeMode(Mode.HITMAN);
+					}					
 				}
 				
 				break;
@@ -273,6 +296,28 @@ public abstract class Explorer extends Agent{
 					//otherwise we could have a lock (FOOD->ONLYEXPLORE->EXPLORE->FOOD)
 					changeMode(Mode.EXPLORE);
 				}
+				break;
+			}
+			case HITMAN:
+			{
+				//try to find flags then agents and then empty space
+				nextTarget = localMap.findNearest(FindType.FOOD, iteration);
+				
+				if(nextTarget != null)
+				{
+					changeMode(Mode.FOODHUNT);
+				}
+				else
+				{
+					nextTarget = localMap.getNearbyEnemyAgent(5);
+					
+					if(nextTarget == null)
+					{
+						nextTarget = localMap.findNearest(FindType.UNEXPLORED, iteration);
+						changeMode(Mode.EXPLORE);
+					}
+				}
+				
 				break;
 			}
 		}

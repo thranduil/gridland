@@ -43,7 +43,7 @@ public class Map {
 	public void clearMap()
 	{
 		HashMap<Position, Integer> newMap = (HashMap<Position, Integer>) map.clone();
-		aStarPlan(findNearest(FindType.HQ, 0), true);
+		aStarPlan(findNearest(FindType.HQ, 0), true, false);
 		
 		for(Position p : map.keySet())
 		{
@@ -303,7 +303,7 @@ public class Map {
 	}
 	
 	
-	public boolean canSafelyMove(Direction nextMove, boolean agentHasFood) {
+	public boolean canSafelyMove(Direction nextMove, boolean agentHasFood, boolean canMoveToEnemyAgent) {
 		Position n = null;
 		
 		//get next Position and get positions to check for enemies (n1,n2,n3)
@@ -369,10 +369,11 @@ public class Map {
 			return false;
 		}
 		
+			
 		//check if in near fields are enemy agents
-		if(map.containsKey(n1) && map.get(n1) == -6
+		if(!canMoveToEnemyAgent && map.containsKey(n1) && (map.get(n1) == -6
 				|| map.containsKey(n2) && map.get(n2) == -6
-				|| map.containsKey(n3) && map.get(n3) == -6)
+				|| map.containsKey(n3) && map.get(n3) == -6))
 		{
 			if(Math.random() > 0.1)
 			{
@@ -424,7 +425,7 @@ public class Map {
 		return canMove;
 	}
 			
-	public LinkedList<Direction> dijkstraPlan(Position nextTarget, boolean returnToHQ) {
+	public LinkedList<Direction> dijkstraPlan(Position nextTarget, boolean returnToHQ, boolean includeEnemyAgent) {
 		
 		HashMap<Position, Position> previous = new HashMap<Position, Position>();
 		HashMap<Position, Integer> distances = new HashMap<Position, Integer>();
@@ -483,7 +484,7 @@ public class Map {
 			
 			int newDistance = nodeDistance + 1;
 			
-			if(canMove(leftField, returnToHQ) && distances.containsKey(leftField))
+			if(canMove(leftField, returnToHQ, includeEnemyAgent) && distances.containsKey(leftField))
 			{
 				if(newDistance < distances.get(leftField))
 				{
@@ -492,7 +493,7 @@ public class Map {
 				}
 			}
 			
-			if(canMove(rightField, returnToHQ) && distances.containsKey(rightField))
+			if(canMove(rightField, returnToHQ, includeEnemyAgent) && distances.containsKey(rightField))
 			{
 				if(newDistance < distances.get(rightField))
 				{
@@ -501,7 +502,7 @@ public class Map {
 				}
 			}
 			
-			if(canMove(upperField, returnToHQ) && distances.containsKey(upperField))
+			if(canMove(upperField, returnToHQ, includeEnemyAgent) && distances.containsKey(upperField))
 			{
 				if(newDistance < distances.get(upperField))
 				{
@@ -510,7 +511,7 @@ public class Map {
 				}
 			}
 			
-			if(canMove(downField, returnToHQ) && distances.containsKey(downField))
+			if(canMove(downField, returnToHQ, includeEnemyAgent) && distances.containsKey(downField))
 			{
 				if(newDistance < distances.get(downField))
 				{
@@ -526,7 +527,7 @@ public class Map {
 		return resultPath;
 	}
 	
-	public LinkedList<Direction> aStarPlan(Position nextTarget, boolean returnToHQ)
+	public LinkedList<Direction> aStarPlan(Position nextTarget, boolean returnToHQ, boolean includeEnemyAgent)
 	{
 		LinkedList<Direction> result = new LinkedList<Direction>();
 		
@@ -563,7 +564,7 @@ public class Map {
 			
 			closedSet.add(current.getPosition());
 			
-			for(Position neighbor : getNeighborNodes(current, returnToHQ))
+			for(Position neighbor : getNeighborNodes(current, returnToHQ, includeEnemyAgent))
 			{
 				if(closedSet.contains(neighbor))
 				{
@@ -591,6 +592,7 @@ public class Map {
 		return result;	
 	}
 	
+	
 	public ArrayList<Integer> getFriendlyAgents(int radius)
 	{
 		ArrayList<Integer> agents = new ArrayList<Integer>();
@@ -613,6 +615,29 @@ public class Map {
 		}
 		
 		return agents;
+	}	
+	
+	public Position getNearbyEnemyAgent(int radius)
+	{
+		Position result = null;
+		
+		for(int x = -radius; x <= radius; x++)
+		{
+			for(int y = -radius; y <= radius; y++)
+			{
+				Position current = new Position(agentLocation.getX() + x, agentLocation.getY() + y);
+				
+				if(map.containsKey(current) && map.get(current) == -6)
+				{
+					if(result == null || GetDistanceFromAgent(current) < GetDistanceFromAgent(result))
+					{
+						result = current;
+					}
+				}
+			}
+		}
+		
+		return result;
 	}
 	
 	
@@ -625,6 +650,7 @@ public class Map {
 	{
 		return Math.abs(p1.getX() - p2.getX()) + Math.abs(p1.getY() - p2.getY());
 	}
+	
 	
 	private int[] getOffset(Neighborhood n)
 	{	
@@ -651,6 +677,7 @@ public class Map {
 		
 		return offset;
 	}
+	
 	
 	private Position getOffsetForReceivedMap(HashMap<Position, Integer> receivedMap)
 	{
@@ -688,6 +715,7 @@ public class Map {
 		return new Position(localHQ.getX() - remoteHQ.getX(), localHQ.getY() - remoteHQ.getY());
 	}
 	
+	
 	private void UpdateMapWithNeighborhood(Neighborhood n, int offsetX, int offsetY)
 	{
 		for(int y = -n.getSize(); y <= n.getSize(); y++)
@@ -711,6 +739,7 @@ public class Map {
 		}
 	}
 	
+	
 	private Direction getDirectionFrom(Position from, Position to) {
 		if(from.getX() + 1 == to.getX())
 		{
@@ -733,6 +762,7 @@ public class Map {
 		return Direction.NONE;
 	}
 
+	
 	private Position getSmallestDistance(HashMap<Position, Integer> distances)
 	{
 		int distance = Integer.MAX_VALUE;
@@ -750,22 +780,29 @@ public class Map {
 		return result;
 	}
 	
-	private boolean canMove(Position p, boolean includeHQ)
+	
+	private boolean canMove(Position p, boolean includeHQ, boolean includeEnemyAgent)
 	{
 		//when we are returning to hq agent can move to hq, but not on food
 		//in other cases agent can't move to hq, but can move to food
-		if(map.containsKey(p) && (map.get(p) == 0 || (map.get(p) == -3 && !includeHQ) || (map.get(p) == -5 && !includeHQ) || (map.get(p) == -2 && includeHQ)))
+		if(map.containsKey(p) 
+				&& (map.get(p) == 0 
+				|| (map.get(p) == -3 && !includeHQ) 
+				|| (map.get(p) == -5 && !includeHQ) 
+				|| (map.get(p) == -2 && includeHQ)
+				|| (map.get(p) == -6 && includeEnemyAgent)))
 		{
 			return true;
 		}
 		return false;
 	}
 	
+	
 	/**
 	 * Returns neighbor nodes(Positions)
 	 * that are empty or (depending on includeHQ) are food/hq
 	 */
-	private ArrayList<Position> getNeighborNodes(ANode current, boolean includeHQ) {
+	private ArrayList<Position> getNeighborNodes(ANode current, boolean includeHQ, boolean includeEnemyAgent) {
 		ArrayList<Position> result = new ArrayList<Position>();
 		
 		Position left = current.getPositionWithOffset(-1, 0);
@@ -773,25 +810,26 @@ public class Map {
 		Position up = current.getPositionWithOffset(0, -1);
 		Position down = current.getPositionWithOffset(0, 1);
 		
-		if(canMove(left, includeHQ))
+		if(canMove(left, includeHQ, includeEnemyAgent))
 		{
 			result.add(left);
 		}
-		if(canMove(right, includeHQ))
+		if(canMove(right, includeHQ, includeEnemyAgent))
 		{
 			result.add(right);
 		}
-		if(canMove(up, includeHQ))
+		if(canMove(up, includeHQ, includeEnemyAgent))
 		{
 			result.add(up);
 		}
-		if(canMove(down, includeHQ))
+		if(canMove(down, includeHQ, includeEnemyAgent))
 		{
 			result.add(down);
 		}
 		
 		return result;
 	}
+	
 	
 	private void printMap(HashMap<Position, Integer> map)
 	{
@@ -812,6 +850,7 @@ public class Map {
 		}
 	}
 	
+	
 	private void printNeighborhood(Neighborhood n)
 	{
 		System.out.println("Neighborhood (" + n.getWidth() + "x" + n.getHeight() + ")");
@@ -824,6 +863,7 @@ public class Map {
 			System.out.println();
 		}
 	}
+	
 	
 	private String getTitle(int title)
 	{

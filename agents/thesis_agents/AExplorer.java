@@ -11,13 +11,18 @@ import org.grid.protocol.Position;
 public class AExplorer extends Explorer{
 
 	@Override
-	ConcurrentLinkedQueue<Direction> getPlan(Position target, boolean includeHQ) {
-		return new ConcurrentLinkedQueue<Direction>(localMap.aStarPlan(target, includeHQ));
+	ConcurrentLinkedQueue<Direction> getPlan(Position target, boolean includeHQ, boolean includeEnemyAgent) {
+		return new ConcurrentLinkedQueue<Direction>(localMap.aStarPlan(target, includeHQ, includeEnemyAgent));
 	}
 
 	@Override
 	int getMessageRadius() {
 		return 3;
+	}
+
+	@Override
+	boolean isKillingEnabled() {
+		return false;
 	}
 
 }
