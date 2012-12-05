@@ -43,7 +43,7 @@ public class Map {
 	public void clearMap()
 	{
 		HashMap<Position, Integer> newMap = (HashMap<Position, Integer>) map.clone();
-		aStarPlan(findNearest(FindType.HQ, 0), true, false);
+		aStarPlan(findNearest(FindType.HQ, 0), true, true);
 		
 		for(Position p : map.keySet())
 		{
@@ -53,6 +53,7 @@ public class Map {
 			}
 		}
 		map = newMap;
+		agentsTTL.clear();
 	}
 	
 	public void updateMap(StateMessage msg)
@@ -559,6 +560,8 @@ public class Map {
 					path.add(p);
 					p = cameFrom.get(p);
 				}
+				
+				currentPath = path;
 				return result;
 			}
 			
