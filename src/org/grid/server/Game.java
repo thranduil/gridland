@@ -21,8 +21,11 @@ import java.awt.Color;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -309,7 +312,7 @@ public class Game {
 	 * Spawn new agents and flags.
 	 * 
 	 */
-	public synchronized void step() {
+	public synchronized void step(PrintWriter log) {
 
 		step++;
 
@@ -358,7 +361,6 @@ public class Game {
 
 		// check end conditions?
 		// TODO
-
 	}
 
 	/**
@@ -739,5 +741,28 @@ public class Game {
 	
 	public int getNeighborhoodSize() {
 		return neighborhoodSize;
+	}
+
+	public boolean areAllFlagsCaptured()
+	{	
+		for(Team t : teams.values())
+		{
+			if(t.getActiveFlagsCount() > 0)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public List<String> getDataForAllTeams()
+	{
+		List<String> result = new ArrayList<String>();
+		
+		for(Team t : teams.values())
+		{
+			result.add(t.getName() + " respawned " + t.getNumberOfSpawnedAgents() + " times and scored " + t.getScore() + " points.");
+		}
+		return result;
 	}
 }

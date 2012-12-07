@@ -133,11 +133,10 @@ public class Agent extends TeamBody {
 						}
 					}
 					if (b instanceof Headquarters) {
-						//TODO: for benchmark: check that flag can be added to any hq, hq keeps counter of flags added
 						if (((Headquarters) b).getTeam() == getTeam()) {
 							for (Flag flag : flags)
 								if(getTeam().isBenchmark())
-									((Headquarters) b).scorePoint();
+									((Headquarters) b).scorePoint(flag);
 								else
 									((Headquarters) b).putFlag(flag);
 							

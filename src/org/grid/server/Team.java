@@ -75,7 +75,7 @@ public class Team {
 			super(tile, team);
 		}
 
-		public void putFlag(Flag flag) {
+		public void putFlag(Flag flag) {	
 			if (flag != null && flag.getTeam() == getTeam()) {
 				
 				if (getTeam().flags.contains(flag)) {
@@ -88,7 +88,6 @@ public class Team {
 					
 				}
 			}
-			
 		}
 		
 		
@@ -96,10 +95,15 @@ public class Team {
 		 * Score point.
 		 * Used for benchmark game mode only.
 		 */
-		public void scorePoint()
+		public void scorePoint(Flag f)
 		{
 			getTeam().score++;
 			getTeam().scoreChange(getTeam().score);
+			
+			if(f != null)
+			{
+				f.getTeam().flags.remove(f);
+			}
 		}
 		
 	}
@@ -123,6 +127,8 @@ public class Team {
 	private FlagMode flagMode;
 	
 	private int score = 0;
+	
+	private int spawnedAgents = 0;
 	
 	public Team(String name, Color color, FlagMode mode) {
 		
@@ -166,6 +172,16 @@ public class Team {
 		
 	}
 	
+	public int getScore()
+	{
+		return score;
+	}
+	
+	public int getNumberOfSpawnedAgents()
+	{
+		return spawnedAgents;
+	}
+	
 	public Flag newFlag(float weight) {
 		
 		Flag f = new Flag(Arena.TILE_FLAG, this, weight);
@@ -190,7 +206,8 @@ public class Team {
 			client.setAgent(agt);
 			used.add(client);
 			
-			Main.log("New agent spawned for team: " + name + " (id: " + agt.getId() + ")");
+			Main.info("New agent spawned for team: " + name + " (id: " + agt.getId() + ")");
+			spawnedAgents ++;
 			
 			return agt;
 		}
@@ -350,6 +367,7 @@ public class Team {
 	public int getActiveFlagsCount() {
 		return flags.size();
 	}
+	
 	public List<Flag> getAllFlags()
 	{
 		ArrayList<Flag> result = new ArrayList<Flag>();

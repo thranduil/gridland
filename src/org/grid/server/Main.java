@@ -414,13 +414,26 @@ public class Main {
 			public void run() {
 				int sleep = 1000 / gameSpeed;
 				long start, used;
+				long gameStart = System.currentTimeMillis();
 				while (true) {
 
 					start = System.currentTimeMillis();
 
 					if (running)
-						game.step();
-
+					{
+						game.step(log);
+						
+						if(game.areAllFlagsCaptured())
+						{	
+							log("Game finished in " + ((System.currentTimeMillis() - gameStart) / 1000) + " seconds.");
+							for(String data : game.getDataForAllTeams())
+							{
+								log(data);
+							}
+							System.exit(0);
+						}
+					}
+					
 					view.update(game.getField());
 
 					used = System.currentTimeMillis() - start;

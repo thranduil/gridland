@@ -29,7 +29,7 @@ public abstract class Explorer extends Agent{
 	
 	private int step;
 	
-	boolean debug = true;
+	boolean debug = false;
 	Mode mode;
 	
 
@@ -245,7 +245,7 @@ public abstract class Explorer extends Agent{
 				}
 				else
 				{
-					nextTarget = localMap.getNearbyEnemyAgent(5);
+					nextTarget = localMap.getNearbyEnemyAgent(4);
 					
 					//if killing is not enabled delete nextTarget
 					if(nextTarget != null && !isKillingEnabled())
