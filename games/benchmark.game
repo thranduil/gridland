@@ -6,7 +6,7 @@ gameplay.speed=50
 #The arena file to load (required)
 gameplay.field=benchmark1.field
 #The maximum number of agents per team (optional)
-gameplay.agents=10
+gameplay.agents=5
 #The number of timesteps between respawn phases (optional)
 gameplay.respawn=30
 
@@ -23,7 +23,7 @@ message.size=1024000
 #Team specification
 #Each team description contains three definitions
 #Team id (required)
-team1=dExplorer
+team1=aExplorer2
 #Team name (optional)
 team2=aExplorer
 #team2=humans

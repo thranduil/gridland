@@ -6,9 +6,9 @@ import org.grid.agent.Membership;
 import org.grid.protocol.NewMessage.Direction;
 import org.grid.protocol.Position;
 
-//java -cp bin org.grid.agent.Agent localhost thesis_agents.AExplorer
-@Membership(team = "aExplorer", passphrase = "1")
-public class AExplorer extends Explorer{
+//java -cp bin org.grid.agent.Agent localhost thesis_agents.AExplorerV2
+@Membership(team = "aExplorer2", passphrase = "1")
+public class AExplorerV2 extends Explorer{
 
 	@Override
 	ConcurrentLinkedQueue<Direction> getPlan(Position target, boolean includeHQ, boolean includeEnemyAgent) {
@@ -17,7 +17,7 @@ public class AExplorer extends Explorer{
 
 	@Override
 	int getMessageRadius() {
-		return 0;
+		return 2;
 	}
 
 	@Override

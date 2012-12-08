@@ -434,7 +434,9 @@ public class Main {
 						}
 					}
 					
-					view.update(game.getField());
+					if (game.getStep() % 100 == 0) {
+						view.update(game.getField());
+					}
 
 					used = System.currentTimeMillis() - start;
 

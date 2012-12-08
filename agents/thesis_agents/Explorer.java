@@ -100,7 +100,8 @@ public abstract class Explorer extends Agent{
 		
 		Position nextTarget = null;
 		while(isAlive())
-		{	
+		{
+			
 			//process all received messages
 			while(!inbox.isEmpty())
 			{
@@ -110,9 +111,10 @@ public abstract class Explorer extends Agent{
 			//process state if there is any
 			if(!states.isEmpty())
 			{	
+				
 				//update local map with all received states
 				while(!states.isEmpty())
-				{
+				{	
 					StateMessage msg = states.poll();
 					if(msg.hasFlag && mode != Mode.NEARHQ)
 					{

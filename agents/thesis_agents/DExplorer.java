@@ -22,7 +22,7 @@ public class DExplorer extends Explorer{
 
 	@Override
 	boolean isKillingEnabled() {
-		return true;
+		return false;
 	}
 
 }
