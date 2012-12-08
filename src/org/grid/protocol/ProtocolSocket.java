@@ -99,10 +99,10 @@ public class ProtocolSocket {
 						continue;
 
 					if (debug) {
-						System.err.println("*** MESSAGE INCOMING <<< "
+						System.err.println("*** MESSAGE INCOMING FROM " + getRemotePort() + " <<< "
 								+ message + " <<<");
 					}
-
+					
 					handleMessage(message);
 				}
 			}
@@ -137,7 +137,7 @@ public class ProtocolSocket {
 						String message = outQueue.poll();
 
 						if (debug)
-							System.err.println("*** PROTOCOL OUTGOING >>> "
+							System.err.println("*** PROTOCOL OUTGOING FOR " + getRemotePort() +" >>> "
 									+ message + " >>>");
 
 						out.writeUTF(message);
@@ -216,7 +216,6 @@ public class ProtocolSocket {
 		synchronized (outQueue) {
 
 			outQueue.add(msg);
-
 			outQueue.notifyAll();
 
 		}

@@ -37,7 +37,7 @@ public class Dispatcher implements Runnable {
 	
 	public class Client extends ProtocolSocket {
 
-		private Status status = Status.UNKNOWN;
+		private Status status;
 		
 		private Team team;
 		
@@ -55,6 +55,7 @@ public class Dispatcher implements Runnable {
 				throws IOException {
 			super(socket);
 			listeners = new Vector<ClientListener>();
+			status = Status.UNKNOWN;
 		}
 		
 		/* (non-Javadoc)
@@ -69,7 +70,9 @@ public class Dispatcher implements Runnable {
 			}
 			
 			if (status == null)
-				status = Status.UNKNOWN;
+			{
+				setStatus(Status.UNKNOWN);
+			}
 			
 			switch (status) {
 			case UNKNOWN: {
@@ -104,10 +107,9 @@ public class Dispatcher implements Runnable {
 					
 					team.addClient(this);
 					
-					status = Status.REGISTERED;
+					setStatus(Status.REGISTERED);
 					
-					sendMessage(new NewMessage.AcknowledgeMessage().encodeMessage());
-				
+					sendMessage(new NewMessage.AcknowledgeMessage().encodeMessage());				
 				}
 				
 				break;
@@ -116,7 +118,7 @@ public class Dispatcher implements Runnable {
 				
 				if (agent != null && (message.getMessageType() == NewMessage.MessageType.ACKNOWLEDGE)) {
 					
-					status = Status.USED;
+					setStatus(Status.USED);
 					
 				}
 				
@@ -128,7 +130,6 @@ public class Dispatcher implements Runnable {
 					return;
 				
 				if (message.getMessageType() == NewMessage.MessageType.SCAN) {
-					
 					scanMessages++;
 					
 					Neighborhood n = game.scanNeighborhood(neighborhoodSize, getAgent());
@@ -211,7 +212,7 @@ public class Dispatcher implements Runnable {
 		public void setAgent(Agent agent) {
 		
 			if (this.agent != null) {
-				status = Status.REGISTERED;
+				setStatus(Status.REGISTERED);
 				sendMessage(new NewMessage.TerminateMessage().encodeMessage());
 			}
 			
@@ -221,7 +222,8 @@ public class Dispatcher implements Runnable {
 			
 			if (agent == null)
 				return;
-			
+
+			setStatus(Status.REGISTERED);
 			sendMessage(new NewMessage.InitializeMessage(agent.getId(), maxMessageSize, game.getSpeed()).encodeMessage());
 			
 		}
@@ -353,6 +355,11 @@ public class Dispatcher implements Runnable {
 			
 			sendMessage(new NewMessage.ReceiveMessage(from, message).encodeMessage());
 			
+		}
+		
+		private void setStatus(Status s)
+		{
+			this.status = s;
 		}
 		
 	}
