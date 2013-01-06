@@ -6,9 +6,9 @@ import org.grid.agent.Membership;
 import org.grid.protocol.NewMessage.Direction;
 import org.grid.protocol.Position;
 
-//java -cp bin org.grid.agent.Agent localhost thesis_agents.AExplorerV2
-@Membership(team = "aExplorer2", passphrase = "1")
-public class AExplorerV2 extends Explorer{
+//java -cp bin org.grid.agent.Agent localhost thesis_agents.ExplorerOne
+@Membership(team = "ExplorerOne", passphrase = "1")
+public class ExplorerOne extends Explorer{
 
 	Boolean optimalExplore = null;
 	Boolean killing = null;
