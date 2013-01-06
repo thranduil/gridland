@@ -398,6 +398,13 @@ public abstract class Agent {
 		if (args.length > 4 + argOffset)
 			passphraseOverride = args[4 + argOffset];
 		
+		//if config was provided with teamName
+		//override team name
+		if(agentConfig.containsKey("teamName"))
+		{
+			teamOverride = agentConfig.get("teamName");
+		}
+		
 		for (int i = 0; i < count; i++) {
 			Socket socket = new Socket(args[0], 5000);
 			socket.setTcpNoDelay(true);
