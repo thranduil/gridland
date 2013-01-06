@@ -17,12 +17,17 @@ public class AExplorerV2 extends Explorer{
 
 	@Override
 	int getMessageRadius() {
-		return 2;
+		return 1;
 	}
 
 	@Override
 	boolean isKillingEnabled() {
 		return false;
+	}
+
+	@Override
+	boolean findOptimalPathInExploreMode() {
+		return true;
 	}
 
 }

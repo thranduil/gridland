@@ -29,7 +29,7 @@ public abstract class Explorer extends Agent{
 	
 	private int step;
 	
-	boolean debug = false;
+	boolean debug = true;
 	Mode mode;
 	
 
@@ -52,6 +52,7 @@ public abstract class Explorer extends Agent{
 	 */
 	abstract boolean isKillingEnabled();
 	
+	abstract boolean findOptimalPathInExploreMode();
 	
 	/* Overridden methods */
 	
@@ -116,7 +117,7 @@ public abstract class Explorer extends Agent{
 				while(!states.isEmpty())
 				{	
 					StateMessage msg = states.poll();
-					if(msg.hasFlag && mode != Mode.NEARHQ)
+					if(msg.hasFlag)
 					{
 						changeMode(Mode.HOMERUN);
 					}
@@ -138,21 +139,34 @@ public abstract class Explorer extends Agent{
 				}
 				
 				int iteration = 0;
+				Direction optimalMove = null;		
+				
 				do
-				{
+				{	
 					//finding next target field based on agent mode					
 					nextTarget = findTarget(iteration);
 					
 					iteration ++;
 	
+					//if enabled find optimal move based on
+					//number of visited fields
+					if(findOptimalPathInExploreMode() && mode == Mode.EXPLORE)
+					{
+						optimalMove = localMap.getOptimalMove(mode == Mode.HITMAN);
+						if(debug && optimalMove != null)
+						{
+							System.out.println("Found move for exploration.");
+						}
+					}
+					
+					//if optimalMove is null
 					//compute next move based on nextTarget
+					if(optimalMove == null)
+					{
+						plan = getPlan(nextTarget, mode == Mode.HOMERUN || mode == Mode.NEARHQ, mode == Mode.HITMAN);
+					}
 					
-					//TODO: perform planning on other thread and here wait
-					//for specific limit and use old plan if computing takes too long
-					
-					plan = getPlan(nextTarget, mode == Mode.HOMERUN || mode == Mode.NEARHQ, mode == Mode.HITMAN);
-					
-					if(plan == null || plan.size() == 0)
+					if(optimalMove == null && (plan == null || plan.size() == 0))
 					{	
 						//if food was found, but is not accessible
 						//now search only for unexplored places
@@ -174,9 +188,9 @@ public abstract class Explorer extends Agent{
 						}
 					}
 				
-				}while(plan.size() == 0 && iteration < 10);
-
-				Direction nextMove = plan.poll();
+				}while(plan.size() == 0 && iteration < 10 && optimalMove == null);
+				
+				Direction nextMove = optimalMove == null ? plan.poll() : optimalMove;
 				
 				//move agent if it can be safely moved or
 				//if this move is the last in plan (flag or hq)

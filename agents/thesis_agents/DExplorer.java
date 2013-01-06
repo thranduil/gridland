@@ -24,5 +24,10 @@ public class DExplorer extends Explorer{
 	boolean isKillingEnabled() {
 		return false;
 	}
+	
+	@Override
+	boolean findOptimalPathInExploreMode() {
+		return true;
+	}
 
 }

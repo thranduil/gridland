@@ -193,6 +193,177 @@ public class Map {
 		System.out.println("Agent id: " + agentId);
 		this.printMap(map);
 	}
+	
+	/**
+	 * Returns optimal direction where the most places
+	 * will be explored.
+	 * If more than one is optimal, method will return
+	 * random one (among optimal ones), function returns
+	 * null if no such move can be made (in which at 
+	 * least one field is explored)
+	 * @return direction
+	 */
+	public Direction getOptimalMove(boolean canMoveToEnemy)
+	{
+		if(agentLocation == null || map == null)
+		{
+			return null;
+		}
+		
+		int exploredField = 0;
+		ArrayList<Direction> directions = new ArrayList<Direction>();
+		
+		//check UP
+		int exploredCurrent = 0;
+		
+		if(canSafelyMove(Direction.UP, false, canMoveToEnemy) && lastMove != Direction.DOWN)
+		{
+			int wallNo = 0;
+			for(int i = -5; i <= 5; i++)
+			{
+				Position temp = new Position(agentLocation.getX() + i, agentLocation.getY() - 6);
+				if(!map.containsKey(temp))
+				{
+					exploredCurrent++;
+				}
+				//check for out of bound checking
+				if(map.containsKey(new Position(agentLocation.getX() + i, agentLocation.getY() - 5))
+					&& map.get(new Position(agentLocation.getX() + i, agentLocation.getY() - 5)) != 0)
+				{
+					wallNo ++;
+				}
+			}
+			
+			if(wallNo != 11)
+			{
+				if(exploredCurrent > exploredField)
+				{
+					exploredField = exploredCurrent;
+					directions.clear();
+					directions.add(Direction.UP);
+				}
+				else if(exploredCurrent == exploredField)
+				{
+					directions.add(Direction.UP);
+				}
+			}
+		}
+		
+		//check DOWN
+		if(canSafelyMove(Direction.DOWN, false, canMoveToEnemy) && lastMove != Direction.UP)
+		{
+			exploredCurrent = 0;
+			int wallNo = 0;
+			for(int i = -5; i <= 5; i++)
+			{
+				Position temp = new Position(agentLocation.getX() + i, agentLocation.getY() + 6);
+				if(!map.containsKey(temp))
+				{
+					exploredCurrent++;
+				}
+				//check for out of bound checking
+				if(map.containsKey(new Position(agentLocation.getX() + i, agentLocation.getY() + 5))
+					&& map.get(new Position(agentLocation.getX() + i, agentLocation.getY() + 5)) != 0)
+				{
+					wallNo ++;
+				}
+			}
+			
+			if(wallNo != 11)
+			{
+				if(exploredCurrent > exploredField)
+				{
+					exploredField = exploredCurrent;
+					directions.clear();
+					directions.add(Direction.DOWN);
+				}
+				else if(exploredCurrent == exploredField)
+				{
+					directions.add(Direction.DOWN);
+				}
+			}
+		}
+		
+		//check LEFT
+		if(canSafelyMove(Direction.LEFT, false, canMoveToEnemy) && lastMove != Direction.RIGHT)
+		{
+			exploredCurrent = 0;
+			int wallNo = 0;
+			for(int i = -5; i <= 5; i++)
+			{
+				Position temp = new Position(agentLocation.getX() - 6, agentLocation.getY() + i);
+				if(!map.containsKey(temp))
+				{
+					exploredCurrent++;
+				}
+				//check for out of bound checking
+				if(map.containsKey(new Position(agentLocation.getX() - 5, agentLocation.getY() +i))
+					&& map.get(new Position(agentLocation.getX() - 5, agentLocation.getY() +i)) != 0)
+				{
+					wallNo ++;
+				}
+			}
+			
+			if(wallNo != 11)
+			{
+				if(exploredCurrent > exploredField)
+				{
+					exploredField = exploredCurrent;
+					directions.clear();
+					directions.add(Direction.LEFT);
+				}
+				else if(exploredCurrent == exploredField)
+				{
+					directions.add(Direction.LEFT);
+				}
+			}
+		}
+
+		if(canSafelyMove(Direction.RIGHT, false, canMoveToEnemy) && lastMove != Direction.LEFT)
+		{
+			//check RIGHT
+			exploredCurrent = 0;
+			int wallNo = 0;
+			for(int i = -5; i <= 5; i++)
+			{
+				Position temp = new Position(agentLocation.getX() + 6, agentLocation.getY() + i);
+				if(!map.containsKey(temp))
+				{
+					exploredCurrent++;
+				}
+				//check for out of bound checking
+				if(map.containsKey(new Position(agentLocation.getX() + 5, agentLocation.getY() +i))
+					&& map.get(new Position(agentLocation.getX() + 5, agentLocation.getY() +i)) != 0)
+				{
+					wallNo ++;
+				}
+			}
+			
+			if(wallNo != 11)
+			{
+				if(exploredCurrent > exploredField)
+				{
+					exploredField = exploredCurrent;
+					directions.clear();
+					directions.add(Direction.RIGHT);
+				}
+				else if(exploredCurrent == exploredField)
+				{
+					directions.add(Direction.RIGHT);
+				}
+			}
+		}
+		
+		if(exploredCurrent == 0)
+		{
+			return null;
+		}
+		else
+		{
+			int random = (int) Math.floor(Math.random() * directions.size());
+			return directions.get(random);
+		}
+	}
 		
 	public Position findNearest(FindType type, int priority)
 	{
@@ -366,6 +537,14 @@ public class Map {
 				&& map.get(n) != -2 	//hq
 				&& map.get(n) != -3 	//food
 				&& map.get(n) != -5)	//food
+		{
+			return false;
+		}
+		
+		//agent cant move to hq if it don't carry food
+		if(map.containsKey(n)
+				&& !agentHasFood
+				&& map.get(n) == -2)
 		{
 			return false;
 		}
