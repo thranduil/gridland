@@ -17,7 +17,7 @@ public class ExplorerOne extends Explorer{
 	
 	@Override
 	ConcurrentLinkedQueue<Direction> getPlan(Position target, boolean includeHQ, boolean includeEnemyAgent) {
-		if(getConfigValueForKey("planAlgorithm") == "a*")
+		if(getConfigValueForKey("planAlgorithm").equals("a*"))
 		{
 			return new ConcurrentLinkedQueue<Direction>(localMap.aStarPlan(target, includeHQ, includeEnemyAgent));
 		}
@@ -44,7 +44,7 @@ public class ExplorerOne extends Explorer{
 			return killing.booleanValue();
 		}
 
-		if(getConfigValueForKey("killing") == "YES")
+		if(getConfigValueForKey("killing").equals("YES"))
 		{
 			killing = true;
 			return killing;
@@ -63,7 +63,7 @@ public class ExplorerOne extends Explorer{
 			return optimalExplore.booleanValue();
 		}
 		
-		if(getConfigValueForKey("optimalExplore") == "YES")
+		if(getConfigValueForKey("optimalExplore").equals("YES"))
 		{
 			optimalExplore = true;
 			return optimalExplore;
