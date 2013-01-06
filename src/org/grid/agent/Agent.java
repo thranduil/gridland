@@ -18,12 +18,17 @@
 package org.grid.agent;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -56,6 +61,8 @@ public abstract class Agent {
 	private static String teamOverride = null;
 	
 	private static String passphraseOverride = null;
+	
+	private static HashMap<String, String> agentConfig = new HashMap<String, String>();
 	
 	public static class ProxyClassLoader extends ClassLoader {
 		
@@ -136,7 +143,7 @@ public abstract class Agent {
 	public static enum Status {
 		UNKNOWN, REGISTERED, INITIALIZED
 	}
-
+	
 	private static class ClientProtocolSocket extends ProtocolSocket implements
 			Runnable {
 
@@ -365,15 +372,31 @@ public abstract class Agent {
 		agentClassStatic = (Class<Agent>) Class.forName(args[1]);
 
 		int count = 1;
+		int argOffset = 0;
 
+		//first argument can be number of agents or config file for agent
 		if (args.length > 2)
-			count = Integer.parseInt(args[2]);
+		{
+			try{
+				count = Integer.parseInt(args[2]);
+			}
+			catch(NumberFormatException e)
+			{
+				if(args.length > 3)
+				{
+					argOffset++;
+					count = Integer.parseInt(args[2 + argOffset]);
+				}
+				File f  = new File(args[2]);
+				readConfigFromFile(f);
+			}
+		}
 
-		if (args.length > 3)
-			teamOverride = args[3];
+		if (args.length > 3 + argOffset)
+			teamOverride = args[3 + argOffset];
 
-		if (args.length > 4)
-			passphraseOverride = args[4];
+		if (args.length > 4 + argOffset)
+			passphraseOverride = args[4 + argOffset];
 		
 		for (int i = 0; i < count; i++) {
 			Socket socket = new Socket(args[0], 5000);
@@ -417,7 +440,33 @@ public abstract class Agent {
 		System.exit(0);
 
 	}
+	
+	public static void readConfigFromFile(File f)
+	{
+		try {
+			Scanner s = new Scanner(f);
+			while(s.hasNextLine())
+			{
+				String[] temp = s.nextLine().split("=");
+				agentConfig.put(temp[0].trim(), temp[1].trim());				
+			}
+		} catch (FileNotFoundException e) {
+			System.err.println("Given file does not exist!");
+		}
+	}
 
+	public static String getConfigValueForKey(String key)
+	{
+		if(agentConfig.containsKey(key))
+		{
+			return agentConfig.get(key);
+		}
+		else
+		{
+			return null;
+		}
+	}
+	
 	private int id;
 
 	private int maxMessageSize;
