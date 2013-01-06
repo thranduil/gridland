@@ -395,7 +395,23 @@ public class Main {
 		}
 
 		try {
-			log = new PrintWriter(new File(logDate.format(new Date()) + "_" + game.getTitle() + ".log"));
+			//get config folder name
+			//that will be using also for storing logs
+			String folderName = "";
+			try
+			{
+				String[] path = args[0].split("/");
+				if(path.length > 1)
+				{
+					for(int i = 0; i < path.length -1; i++)
+					{
+						folderName = folderName + path[i] + "/";
+					}
+				}
+				
+			}catch(Exception e){}
+			
+			log = new PrintWriter(new File(folderName + logDate.format(new Date()) + "_" + game.getTitle() + ".log"));
 			
 		} catch (Exception e) {}
 		

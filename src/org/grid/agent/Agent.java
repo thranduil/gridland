@@ -405,6 +405,12 @@ public abstract class Agent {
 			teamOverride = agentConfig.get("teamName");
 		}
 		
+		//override number of agents
+		if(agentConfig.containsKey("numberOfAgents"))
+		{
+			count = Integer.parseInt(agentConfig.get("numberOfAgents"));
+		}
+		
 		for (int i = 0; i < count; i++) {
 			Socket socket = new Socket(args[0], 5000);
 			socket.setTcpNoDelay(true);
