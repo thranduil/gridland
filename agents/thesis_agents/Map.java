@@ -354,7 +354,7 @@ public class Map {
 			}
 		}
 		
-		if(exploredCurrent == 0)
+		if(exploredCurrent == 0 || directions.isEmpty())
 		{
 			return null;
 		}

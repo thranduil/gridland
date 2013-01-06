@@ -29,7 +29,7 @@ public abstract class Explorer extends Agent{
 	
 	private int step;
 	
-	boolean debug = true;
+	boolean debug = false;
 	Mode mode;
 	
 
