@@ -22,6 +22,8 @@ import org.grid.protocol.NewMessage.Direction;
 public class HumanAgent extends Agent {
 
 	private JFrame window;
+	
+	boolean keySkip = true;
 
 	private SwingView view = new SwingView(CELL_SIZE);
 
@@ -70,6 +72,10 @@ public class HumanAgent extends Agent {
 	    public boolean dispatchKeyEvent(KeyEvent e) {
 
 			if (!isAlive())
+				return false;
+			
+			keySkip = !keySkip;
+			if(keySkip)
 				return false;
 			
 			switch (e.getKeyCode()) {
