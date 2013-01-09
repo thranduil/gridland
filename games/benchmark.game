@@ -23,7 +23,7 @@ message.size=1024000
 #Team specification
 #Each team description contains three definitions
 #Team id (required)
-team1=aExplorer2
+team1=ExplorerOne
 #Team name (optional)
 #team2=aExplorer
 team2=humans

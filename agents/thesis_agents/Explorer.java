@@ -99,6 +99,7 @@ public abstract class Explorer extends Agent{
 		//first trigger scan request, so that we get initial state
 		scan(0);
 		
+		int cantMoveCounter = 0;
 		Position nextTarget = null;
 		while(isAlive())
 		{
@@ -202,6 +203,7 @@ public abstract class Explorer extends Agent{
 					}
 					this.move(nextMove);
 					step++;
+					cantMoveCounter = 0;
 				}
 				else
 				{
@@ -209,9 +211,23 @@ public abstract class Explorer extends Agent{
 					{
 						System.out.println("Can't move " + nextMove + ". Sending direction NONE.");
 					}
-					this.move(Direction.NONE);
-				}					
-				
+					if(cantMoveCounter > 100)
+					{
+						System.out.println("Going to hell!");
+						cantMoveCounter ++;
+						this.move(Direction.NONE);
+						//this.move(Direction.DOWN);
+					}
+					else
+					{
+						this.move(Direction.NONE);
+						cantMoveCounter ++;
+					}
+				}
+				//remove all enemy agents from local map, so that they
+				//do not stay there forever
+				//in scan message we add all visible enemy agents again
+				localMap.removeEnemyAgents();
 			}
 		}
 		

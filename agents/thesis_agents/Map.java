@@ -14,6 +14,7 @@ public class Map {
 
 	private HashMap<Position, Integer> map = new HashMap<Position, Integer>();
 	private HashMap<Integer, Integer> agentsTTL = new HashMap<Integer, Integer>();
+	private ArrayList<Position> enemyAgents = new ArrayList<Position>();
 	
 	private Position agentLocation = null;
 	private Direction lastMove = Direction.NONE;
@@ -79,6 +80,23 @@ public class Map {
 			
 			UpdateMapWithNeighborhood(msg.neighborhood, agentLocation.getX() + offset[0], agentLocation.getY() + offset[1]);	
 		}		
+	}
+	
+	/**
+	 * Remove all enemy agents from local map (adds empty field in their's position).
+	 * Enemy agents are in arrayList enemyAgents.
+	 * We call this method so that no old agents are in map
+	 */
+	public void removeEnemyAgents()
+	{
+		for(Position p : enemyAgents)
+		{
+			if(map.containsKey(p))
+			{
+				map.put(p, 0);
+			}
+		}	
+		enemyAgents.clear();
 	}
 	
 	/**
@@ -178,7 +196,8 @@ public class Map {
 			Integer field = map.get(p);
 			
 			//send only agents that are still in our neighborhood(of size 5 fields)
-			if((field == -6 || field > 0) && GetDistanceFromAgent(p) > 5)
+			//do not send enemy agents
+			if((field > 0 && GetDistanceFromAgent(p) > 5) || field == -6)
 			{
 				continue;
 			}
@@ -917,6 +936,11 @@ public class Map {
 				{
 					agentsTTL.put(field, TTL);
 				}
+				
+				if(field == -6)
+				{
+					enemyAgents.add(pos);
+				}
 			}
 		}
 	}
@@ -1072,7 +1096,8 @@ public class Map {
 			if(title < 0)
 			{
 				//enemy agent
-				return "E";
+				//title has value in this case -6
+				return "e";
 			}
 			return "Y";
 		}
