@@ -1,10 +1,10 @@
-#This is a sample game file 
+#This is game file for BENCHMARK mode
 
 #Gameplay options
 #The speed of the gameplay (optional)
 gameplay.speed=50
 #The arena file to load (required)
-gameplay.field=benchmark.field
+gameplay.field=closed_map.field
 #The maximum number of agents per team (optional)
 gameplay.agents=20
 #The number of timesteps between respawn phases (optional)

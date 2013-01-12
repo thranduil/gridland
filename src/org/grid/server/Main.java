@@ -578,7 +578,7 @@ public class Main {
 		
 		log("Server ready.");
 		
-		/*
+		
 		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e1) {
@@ -587,7 +587,7 @@ public class Main {
 		}
 		
 		running = true;	
-		*/
+	
 	}
 	
 	private static DateFormat logDate = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");

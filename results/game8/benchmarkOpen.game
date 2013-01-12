@@ -1,0 +1,28 @@
+#This is game file for BENCHMARK mode
+
+#Gameplay options
+#The speed of the gameplay (optional)
+gameplay.speed=50
+#The arena file to load (required)
+gameplay.field=open_map.field
+#The maximum number of agents per team (optional)
+gameplay.agents=20
+#The number of timesteps between respawn phases (optional)
+gameplay.respawn=30
+
+gameplay.flags.pool = 1
+
+#Gameplay mode
+gameplay.flags = BENCHMARK
+
+#Protocol options
+#Maximum personal message size (optional)
+message.size=5024000
+
+
+#Team specification
+#Each team description contains three definitions
+#Team id (required)
+team1=team1
+#Team name (optional)
+team2=team2
