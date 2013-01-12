@@ -562,10 +562,16 @@ public class Map {
 		
 		//agent cant move to hq if it don't carry food
 		if(map.containsKey(n)
-				&& !agentHasFood
 				&& map.get(n) == -2)
 		{
-			return false;
+			if(agentHasFood)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
 		}
 		
 			
@@ -606,7 +612,6 @@ public class Map {
 				{
 					continue;
 				}
-
 				
 				Position p = new Position(n.getX() + x, n.getY() + y);
 				if(map.containsKey(p))
@@ -615,13 +620,61 @@ public class Map {
 					int id = map.get(p);
 					if( id > 0 &&  id < agentId)
 					{
-						canMove = false;
+						//agent at position p has priority
+						//but we need to check if it can realy reach
+						//position n in 1(dont have food) or 2(have food) steps
+
+						canMove = !isAccessible(p, n, agentHasFood ? 2 : 1);
+						if(!canMove)
+						{
+							return canMove;
+						}
 					}
 				}
 			}
 		}
 		
 		return canMove;
+	}
+	
+	public boolean isAccessible(Position from, Position to, int limit)
+	{
+		if(limit == 0)
+		{
+			return from.equals(to);
+		}
+		else if(from.equals(to))
+		{
+			return true;
+		}
+
+		Position upField = new Position (from.getX(), from.getY() - 1);
+		Position downField = new Position (from.getX(), from.getY() + 1);
+		Position leftField = new Position (from.getX() - 1, from.getY());
+		Position rightField = new Position (from.getX() + 1, from.getY());
+		
+		boolean up, down, left, right;
+		up = down = left = right = false;
+		
+		//expand field only if it is empty
+		if(map.containsKey(upField) && map.get(upField) == 0)
+		{
+			up = isAccessible(upField, to, limit - 1);	
+		}
+		if(map.containsKey(downField) && map.get(downField) == 0)
+		{
+			down = isAccessible(downField, to, limit - 1);	
+		}
+		if(map.containsKey(leftField) && map.get(leftField) == 0)
+		{
+			left = isAccessible(leftField, to, limit - 1);	
+		}
+		if(map.containsKey(rightField) && map.get(rightField) == 0)
+		{
+			right = isAccessible(rightField, to, limit - 1);	
+		}
+		
+		return up || down || left || right;
 	}
 			
 	public LinkedList<Direction> dijkstraPlan(Position nextTarget, boolean returnToHQ, boolean includeEnemyAgent) {
