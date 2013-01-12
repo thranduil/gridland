@@ -386,7 +386,7 @@ public class Map {
 		
 	public Position findNearest(FindType type, int priority)
 	{
-		HashMap<Integer, Position> distanceToField = new HashMap<Integer, Position>();
+		HashMap<Integer, ArrayList<Position>> distanceToField = new HashMap<Integer, ArrayList<Position>>();
 		
 		for(Position p : map.keySet())
 		{
@@ -429,7 +429,20 @@ public class Map {
 			//check if current position is nearest among the most near
 			if(satisfyCondition)
 			{
-				distanceToField.put(GetDistanceFromAgent(p), p);
+				int dist = GetDistanceFromAgent(p);
+				if(distanceToField.containsKey(dist))
+				{
+					ArrayList<Position> tmp = distanceToField.get(dist);
+					tmp.add(p);
+					distanceToField.put(dist, tmp);
+				}
+				else
+				{
+					ArrayList<Position> tmp = new ArrayList<Position>();
+					tmp.add(p);
+					distanceToField.put(GetDistanceFromAgent(p), tmp);
+				}
+				
 			}
 		}
 		
@@ -446,10 +459,13 @@ public class Map {
 		{
 			if(distanceToField.containsKey(i))
 			{
-				result = distanceToField.get(i);
+				ArrayList<Position> tmp = distanceToField.get(i);
+				result = tmp.get(0);
 				
 				if(priority == 0)
 				{
+					int random = (int) Math.floor(Math.random() * tmp.size());
+					result = tmp.get(random);
 					break;
 				}
 				else
